@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import { Plus, User, ShieldCheck } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { Card, Input, Button } from '../ui';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -9,11 +10,33 @@ interface AuthModalProps {
 }
 
 export function AuthModal({ isOpen, onClose }: AuthModalProps) {
+  const { signIn, signUp } = useAuth();
+  const [isLogin, setIsLogin] = useState(true);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [displayName, setDisplayName] = useState('');
+  const [errorMsg, setErrorMsg] = useState('');
+  const [loading, setLoading] = useState(false);
+
   if (!isOpen) return null;
 
-  const handleDemoAccess = (role: 'client' | 'admin' = 'client') => {
-    window.dispatchEvent(new CustomEvent('auth:demo', { detail: { role } }));
-    onClose();
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMsg('');
+    setLoading(true);
+
+    try {
+      if (isLogin) {
+        await signIn({ email, password });
+      } else {
+        await signUp({ display_name: displayName, email, password });
+      }
+      onClose(); // Fecha o modal ao logar com sucesso
+    } catch (err: any) {
+      setErrorMsg(err.message || 'Ocorreu um erro ao autenticar.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -29,42 +52,69 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
             <Plus className="rotate-45 w-6 h-6" />
           </button>
           
-          <div className="text-center mb-12">
-            <h2 className="text-4xl md:text-6xl mb-4 font-display font-black uppercase tracking-tighter">Conectar</h2>
-            <p className="text-[9px] text-white/30 uppercase tracking-[0.4em] font-black">Acesso Exclusivo</p>
+          <div className="text-center mb-10">
+            <h2 className="text-4xl md:text-6xl mb-2 font-display font-black uppercase tracking-tighter">
+              {isLogin ? 'Conectar' : 'Registrar'}
+            </h2>
+            <p className="text-[9px] text-white/30 uppercase tracking-[0.4em] font-black">
+              {isLogin ? 'Acesso Exclusivo' : 'Crie sua conta'}
+            </p>
           </div>
 
-          <div className="space-y-6">
-            <Input label="CPF" placeholder="000.000.000-00" />
-            <Input label="Senha" type="password" placeholder="••••••••" />
-            <Button className="w-full !py-5">Autenticar</Button>
-            
-            <div className="relative py-4">
-              <div className="absolute inset-0 flex items-center px-4"><div className="w-full border-t border-white/5" /></div>
-              <div className="relative flex justify-center text-[7px] uppercase tracking-[0.5em] font-bold text-white/20 bg-[#0A0A0A] px-4">Métodos de Teste</div>
+          {errorMsg && (
+            <div className="mb-6 p-3 bg-red-500/10 border border-red-500/20 rounded text-red-400 text-xs text-center">
+              {errorMsg}
             </div>
+          )}
 
-            <div className="grid grid-cols-2 gap-4">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {!isLogin && (
+              <Input 
+                label="Nome Completo" 
+                placeholder="Seu nome" 
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+                required
+              />
+            )}
+            <Input 
+              label="E-mail" 
+              type="email" 
+              placeholder="seu@email.com" 
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+            <Input 
+              label="Senha" 
+              type="password" 
+              placeholder="••••••••" 
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+            
+            <Button type="submit" className="w-full !py-5" disabled={loading}>
+              {loading ? 'Aguarde...' : (isLogin ? 'Autenticar' : 'Criar Conta')}
+            </Button>
+            
+            <div className="text-center mt-6">
               <button 
-                onClick={() => handleDemoAccess('client')}
-                className="flex flex-col items-center justify-center gap-2 py-4 rounded-sm border border-[#D4AF37]/20 bg-[#D4AF37]/5 hover:bg-[#D4AF37]/10 transition-all text-[8px] uppercase tracking-[0.2em] font-bold text-[#D4AF37]"
+                type="button"
+                onClick={() => {
+                  setIsLogin(!isLogin);
+                  setErrorMsg('');
+                }}
+                className="text-[10px] text-white/50 hover:text-white transition-colors uppercase tracking-widest font-bold"
               >
-                <User className="w-5 h-5" />
-                Demo Cliente
-              </button>
-              <button 
-                onClick={() => handleDemoAccess('admin')}
-                className="flex flex-col items-center justify-center gap-2 py-4 rounded-sm border border-white/10 bg-white/5 hover:bg-white/10 transition-all text-[8px] uppercase tracking-widest font-bold text-white/60"
-              >
-                <ShieldCheck className="w-5 h-5" />
-                Demo Admin
+                {isLogin ? 'Não possui conta? Registre-se' : 'Já tem uma conta? Conecte-se'}
               </button>
             </div>
             
             <p className="text-center text-[9px] text-white/20 uppercase tracking-[0.2em] mt-8">
-              Acesso exclusivo para convidados da oficina.
+              Acesso protegido Vellux Motors.
             </p>
-          </div>
+          </form>
         </Card>
       </motion.div>
     </div>
