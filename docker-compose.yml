@@ -1,50 +1,13 @@
 version: '3.8'
 
 services:
-  db:
-    image: postgres:15-alpine
-    container_name: projeto_db
-    restart: always
-    environment:
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: adminpassword
-      POSTGRES_DB: meubanco
-    ports:
-      - "5432:5432"
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-      - ./create-tables.sql:/docker-entrypoint-initdb.d/init.sql
-
-  backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    container_name: projeto_backend
-    ports:
-      - "3000:3000"
-    environment:
-      - PORT=3000
-      - DATABASE_URL=postgres://admin:adminpassword@db:5432/meubanco
-    volumes:
-      # Espelha o código local para dentro do container (Hot Reload)
-      - ./backend:/app
-      # Evita que a pasta node_modules local sobrescreva a do container
-      - /app/node_modules
-    depends_on:
-      - db
-
   frontend:
     build:
-      context: ./frontend
+      context: .
       dockerfile: Dockerfile
     container_name: projeto_frontend
     ports:
       - "5173:5173"
     volumes:
-      - ./frontend:/app
+      - .:/app
       - /app/node_modules
-    depends_on:
-      - backend
-
-volumes:
-  pgdata:
