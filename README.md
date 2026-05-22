@@ -38,7 +38,7 @@ Se preferir rodar o ambiente isolado, basta utilizar o Docker Compose:
    docker-compose up -d
    ```
    
-   O aplicativo estará rodando na porta `3000` por padrão em ambos os casos.
+   O aplicativo estará rodando na porta `5173` por padrão em ambos os casos.
 
 ## 🛠 Scripts Disponíveis
 
