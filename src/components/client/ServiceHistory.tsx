@@ -1,0 +1,160 @@
+import React from 'react';
+import { Clock, CheckCircle2, AlertCircle, Wrench, User, ChevronRight, Activity, Car } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+import { Card } from '../ui';
+import { MaintenanceService, ServiceStatus } from '../../types';
+
+export function ServiceHistory() {
+  const services: MaintenanceService[] = [
+    {
+       id: '3',
+       vehicleId: 'v1',
+       vehicleName: 'FERRARI 488 PISTA',
+       clientId: 'c1',
+       title: 'Execução Técnica: Suspensão Track-Spec',
+       description: 'Seu veículo está na baia 04 sob cuidados da equipe técnica.',
+       status: ServiceStatus.IN_PROGRESS,
+       scheduledDate: Date.now(),
+       mechanicIds: ['Marcos', 'Andre'],
+       history: [
+         { timestamp: Date.now() - 3600000 * 2, status: ServiceStatus.PENDING, message: 'Check-in realizado e veículo posicionado.', authorId: 'system' },
+         { timestamp: Date.now() - 3600000, status: ServiceStatus.IN_PROGRESS, message: 'Desmontagem do conjunto traseiro iniciada.', authorId: 'Marcos' },
+         { timestamp: Date.now() - 1800000, status: ServiceStatus.IN_PROGRESS, message: 'Calibração dos amortecedores Ohlins em andamento.', authorId: 'Andre' },
+       ],
+       budget: 12500,
+    },
+    {
+       id: '1',
+       vehicleId: 'v1',
+       vehicleName: 'PORSCHE 911 GT3 RS',
+       clientId: 'c1',
+       title: 'Troca de Bateria Lithium',
+       description: 'Aguardando liberação logística da peça original.',
+       status: ServiceStatus.AWAITING_PARTS,
+       scheduledDate: Date.now() - 86400000 * 2,
+       history: [],
+       budget: 1850,
+    },
+    {
+       id: '2',
+       vehicleId: 'v1',
+       vehicleName: 'LAMBORGHINI HURACÁN STO',
+       clientId: 'c1',
+       title: 'Manutenção do Painel Digital',
+       description: 'Concluído com sucesso e testado em pista.',
+       status: ServiceStatus.COMPLETED,
+       scheduledDate: Date.now() - 86400000 * 10,
+       history: [],
+       budget: 3200,
+       evaluation: { rating: 5, comment: 'Ótimo serviço', date: Date.now() }
+    }
+  ];
+
+  const getStatusConfig = (status: ServiceStatus) => {
+    switch (status) {
+      case ServiceStatus.IN_PROGRESS:
+        return { color: 'text-blue-500', bg: 'bg-blue-500/10', border: 'border-blue-500/20', icon: Activity, label: 'Em Execução' };
+      case ServiceStatus.COMPLETED:
+        return { color: 'text-green-500', bg: 'bg-green-500/10', border: 'border-green-500/20', icon: CheckCircle2, label: 'Concluído' };
+      case ServiceStatus.AWAITING_PARTS:
+        return { color: 'text-yellow-500', bg: 'bg-yellow-500/10', border: 'border-yellow-500/20', icon: Clock, label: 'Aguardando Peças' };
+      case ServiceStatus.PENDING:
+        return { color: 'text-white/40', bg: 'bg-white/5', border: 'border-white/10', icon: Clock, label: 'Agendado' };
+      default:
+        return { color: 'text-white/20', bg: 'bg-white/5', border: 'border-white/5', icon: Clock, label: 'Status' };
+    }
+  };
+
+  return (
+    <div className="space-y-8">
+      {services.map((service) => {
+        const config = getStatusConfig(service.status);
+        const isActive = service.status === ServiceStatus.IN_PROGRESS;
+
+        return (
+          <Card key={service.id} className={`relative overflow-hidden group p-0 border-white/5 ${isActive ? 'ring-1 ring-blue-500/30' : ''}`}>
+            {isActive && (
+              <div className="absolute top-0 left-0 right-0 h-1 overflow-hidden">
+                <motion.div 
+                  initial={{ x: '-100%' }}
+                  animate={{ x: '100%' }}
+                  transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                  className="w-1/2 h-full bg-gradient-to-r from-transparent via-blue-500 to-transparent"
+                />
+              </div>
+            )}
+
+            <div className="p-6 md:p-8">
+              <div className="flex flex-col md:flex-row gap-8">
+                <div className="flex-1 space-y-6">
+                  <div className="flex flex-wrap items-start justify-between gap-4">
+                    <div>
+                      <div className="flex items-center gap-3 mb-2">
+                        <span className={`flex items-center gap-1.5 px-2.5 py-1 text-[8px] font-black uppercase tracking-widest ${config.bg} ${config.color} border ${config.border}`}>
+                          <config.icon className="w-3 h-3" /> {config.label}
+                        </span>
+                        {service.vehicleName && (
+                          <span className="flex items-center gap-1.5 px-2.5 py-1 text-[8px] font-black uppercase tracking-widest bg-white/5 text-white/40 border border-white/10">
+                            <Car className="w-3 h-3" /> {service.vehicleName}
+                          </span>
+                        )}
+                      </div>
+                      <h4 className="text-2xl md:text-3xl font-display font-black uppercase tracking-tighter italic leading-tight text-white">{service.title}</h4>
+                      <p className="text-xs text-white/40 mt-2 font-medium">{service.description}</p>
+                    </div>
+                    
+                    <div className="text-right">
+                       <p className="text-[9px] text-white/20 uppercase tracking-widest font-black mb-1">Custo Estimado</p>
+                       <p className="text-xl font-display font-black text-white italic">R$ {service.budget?.toLocaleString('pt-BR')}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-8 pt-4">
+                     {service.mechanicIds && service.mechanicIds.length > 0 && (
+                       <div className="flex flex-col">
+                          <span className="text-[8px] uppercase tracking-widest text-white/20 font-black mb-2">Equipe Alocada</span>
+                          <div className="flex -space-x-2">
+                            {service.mechanicIds.map(m => (
+                              <div key={m} className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center group/m relative" title={m}>
+                                <User className="w-3.5 h-3.5 text-white/40" />
+                                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-black text-[7px] font-black uppercase tracking-widest opacity-0 group-hover/m:opacity-100 transition-opacity border border-white/10 pointer-events-none whitespace-nowrap">
+                                  {m}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                       </div>
+                     )}
+
+                     {!isActive && service.evaluation && (
+                       <div className="flex flex-col">
+                          <span className="text-[8px] uppercase tracking-widest text-white/20 font-black mb-2">Avaliação</span>
+                          <div className="flex gap-1">
+                            {[1,2,3,4,5].map(s => (
+                              <div key={s} className={`w-3 h-1 ${s <= service.evaluation!.rating ? 'bg-[#F6911F]' : 'bg-white/5'}`} />
+                            ))}
+                          </div>
+                       </div>
+                     )}
+                  </div>
+                </div>
+
+                <div className="md:w-px bg-white/5" />
+
+                <div className="md:w-48 shrink-0 space-y-4">
+                   <div className="p-4 bg-white/[0.02] border border-white/5 rounded-sm">
+                      <p className="text-[8px] uppercase tracking-widest text-white/20 font-black mb-2">Previsão Entrega</p>
+                      <p className="text-sm font-black text-white italic">HOJE, 17:30</p>
+                   </div>
+                   <button className="w-full py-4 text-[9px] uppercase tracking-[0.2em] font-black border border-white/5 hover:border-white/20 hover:bg-white/5 transition-all text-white/40 hover:text-white flex items-center justify-center gap-2 group">
+                     Solicitar Contato <ChevronRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
+                   </button>
+                </div>
+              </div>
+            </div>
+          </Card>
+        );
+      })}
+    </div>
+  );
+}
