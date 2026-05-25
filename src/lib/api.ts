@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:3000';
+const API_URL = 'http://localhost:3000/api';
 const getHeaders = () => {
   const headers: HeadersInit = {
     'Content-Type': 'application/json',

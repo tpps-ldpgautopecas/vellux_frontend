@@ -68,7 +68,7 @@ export default function ServiceScheduler({ onSuccess }: { onSuccess: () => void 
     setError(null);
 
     try {
-      await api.post('/api/appointments', {
+      await api.post('/appointments', {
         vehicle_id: parseInt(selectedVehicle),
         service_type: serviceType,
         date: date,
