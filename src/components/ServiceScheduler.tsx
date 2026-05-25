@@ -14,10 +14,26 @@ import {
   AlertCircle,
   ShieldCheck,
   ChevronRight,
-  Plus
+  ChevronLeft,
+  Plus,
+  StickyNote
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { Card, Button, Input } from './ui';
+import { api } from '../lib/api';
+
+const SERVICOS_DISPONIVEIS = [
+  "Revisão & Mecânica",
+  "Suspensão & Freios",
+  "Diagnóstico Bosch",
+  "Estética & Pintura",
+  "Câmbio & Transmissão",
+  "Climatização Ozônio"
+];
+
+// O "Hoje" Dinâmico
+const dataAtual = new Date();
+const HOJE_REAL = new Date(dataAtual.getFullYear(), dataAtual.getMonth(), dataAtual.getDate());
 
 export default function ServiceScheduler({ onSuccess }: { onSuccess: () => void }) {
   const { profile: userProfile } = useAuth();
@@ -26,19 +42,23 @@ export default function ServiceScheduler({ onSuccess }: { onSuccess: () => void 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Mock Vehicles
+  // Controle do calendário (Inicia no mês real do usuário)
+  const [mesAtual, setMesAtual] = useState(new Date(HOJE_REAL.getFullYear(), HOJE_REAL.getMonth(), 1));
+
+  // Mock Vehicles (Futuramente virá da API)
   const vehicles = [
-    { id: 'CIVIC-123', make: 'Honda', model: 'Civic', plate: 'BRA-1234' },
-    { id: '911-PRO', make: 'Porsche', model: '911 Carrera', plate: 'LUX-9110' }
+    { id: '1', make: 'Toyota', model: 'Corolla', plate: 'ABC1D23' },
+    { id: '2', make: 'Honda', model: 'Civic', plate: 'XYZ9K88' }, 
   ];
 
   // Form State
   const [selectedVehicle, setSelectedVehicle] = useState<string>('');
-  const [serviceType, setServiceType] = useState<string>('');
+  const [serviceType, setServiceType] = useState<string>(SERVICOS_DISPONIVEIS[0]);
   const [date, setDate] = useState<string>('');
   const [time, setTime] = useState<string>('');
+  const [notes, setNotes] = useState<string>('');
 
-  const handleScheduleMock = async () => {
+  const handleSchedule = async () => {
     if (!selectedVehicle || !serviceType || !date || !time) {
       setError("Por favor, preencha todos os campos.");
       return;
@@ -47,11 +67,41 @@ export default function ServiceScheduler({ onSuccess }: { onSuccess: () => void 
     setIsSubmitting(true);
     setError(null);
 
-    // Simulate API delay
-    setTimeout(() => {
+    try {
+      await api.post('/api/appointments', {
+        vehicle_id: parseInt(selectedVehicle),
+        service_type: serviceType,
+        date: date,
+        time: time,
+        notes: notes
+      });
+
+      setStep(3); // Sucesso
+    } catch (err: any) {
+      console.error(err);
+      // Alterado para capturar a mensagem do fetch nativo perfeitamente
+      setError(err.message || "Erro ao confirmar agendamento. Tente novamente.");
+    } finally {
       setIsSubmitting(false);
-      setStep(3); // Success step
-    }, 1500);
+    }
+  };
+
+  // Lógica de Renderização do Calendário
+  const diasNoMes = new Date(mesAtual.getFullYear(), mesAtual.getMonth() + 1, 0).getDate();
+  const primeiroDiaSemana = new Date(mesAtual.getFullYear(), mesAtual.getMonth(), 1).getDay();
+  
+  const nomeDoMes = mesAtual.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+  const diasVazios = Array.from({ length: primeiroDiaSemana }, (_, i) => i);
+  const diasDoMes = Array.from({ length: diasNoMes }, (_, i) => i + 1);
+
+  const irParaMesAnterior = () => {
+    if (mesAtual.getFullYear() > HOJE_REAL.getFullYear() || (mesAtual.getFullYear() === HOJE_REAL.getFullYear() && mesAtual.getMonth() > HOJE_REAL.getMonth())) {
+        setMesAtual(new Date(mesAtual.getFullYear(), mesAtual.getMonth() - 1, 1));
+    }
+  };
+
+  const irParaProximoMes = () => {
+    setMesAtual(new Date(mesAtual.getFullYear(), mesAtual.getMonth() + 1, 1));
   };
 
   if (loading) return (
@@ -61,7 +111,7 @@ export default function ServiceScheduler({ onSuccess }: { onSuccess: () => void 
   );
 
   return (
-    <div className="max-w-3xl mx-auto py-12 px-6">
+    <div className="max-w-5xl mx-auto py-12 px-6">
       <AnimatePresence mode="wait">
         {step === 1 && (
           <motion.div
@@ -69,14 +119,14 @@ export default function ServiceScheduler({ onSuccess }: { onSuccess: () => void 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="space-y-8"
+            className="space-y-8 max-w-3xl mx-auto" // <-- Adicionado max-w-3xl e mx-auto aqui!
           >
             <div>
               <h3 className="text-2xl md:text-3xl font-display font-black uppercase tracking-tighter mb-2">Veículo</h3>
               <p className="text-white/40 text-[10px] md:text-xs uppercase tracking-widest font-bold">Selecione para o atelier</p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4"> {/* <-- Voltou para grid-cols-2 */}
               {vehicles.length > 0 ? vehicles.map(v => (
                 <Card 
                   key={v.id}
@@ -84,7 +134,7 @@ export default function ServiceScheduler({ onSuccess }: { onSuccess: () => void 
                   className={`p-6 cursor-pointer border ${selectedVehicle === v.id ? 'border-[#F6911F] bg-[#F6911F]/5' : 'border-white/5 hover:border-white/10'}`}
                 >
                   <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-sm bg-white/5 flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-sm bg-white/5 flex items-center justify-center shrink-0">
                       <Car className={`w-5 h-5 ${selectedVehicle === v.id ? 'text-[#F6911F]' : 'text-white/20'}`} />
                     </div>
                     <div>
@@ -102,8 +152,8 @@ export default function ServiceScheduler({ onSuccess }: { onSuccess: () => void 
             </div>
 
             {selectedVehicle && (
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                <Button className="w-full flex justify-between group" onClick={() => setStep(2)}>
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex justify-end mt-8">
+                <Button className="w-full md:w-auto flex justify-between gap-4 group px-12" onClick={() => setStep(2)}>
                   Próximo Passo
                   <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </Button>
@@ -130,40 +180,63 @@ export default function ServiceScheduler({ onSuccess }: { onSuccess: () => void 
               </div>
             </div>
 
-            <div className="grid lg:grid-cols-2 gap-8">
+            {error && (
+              <div className="p-4 bg-red-500/10 border border-red-500/20 text-red-500 text-sm flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                {error}
+              </div>
+            )}
+
+            <div className="grid lg:grid-cols-5 gap-8">
               {/* Calendar Visual */}
-              <Card className="p-6 border-white/5 bg-white/[0.01]">
+              <Card className="p-6 border-white/5 bg-white/[0.01] lg:col-span-2">
                 <div className="flex items-center justify-between mb-6">
-                  <h4 className="text-[10px] uppercase tracking-widest font-black text-white/40 italic">Maio 2026</h4>
+                  <h4 className="text-xs uppercase tracking-widest font-black text-white/60 italic">{nomeDoMes}</h4>
                   <div className="flex gap-2">
-                    <button className="w-6 h-6 bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors"><ChevronRight className="w-3 h-3 rotate-180" /></button>
-                    <button className="w-6 h-6 bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors"><ChevronRight className="w-3 h-3" /></button>
+                    <button 
+                        onClick={irParaMesAnterior}
+                        disabled={mesAtual.getFullYear() <= HOJE_REAL.getFullYear() && mesAtual.getMonth() <= HOJE_REAL.getMonth()}
+                        className="w-8 h-8 bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
+                        <ChevronLeft className="w-4 h-4" />
+                    </button>
+                    <button 
+                        onClick={irParaProximoMes}
+                        className="w-8 h-8 bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors">
+                        <ChevronRight className="w-4 h-4" />
+                    </button>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-7 gap-2 text-center mb-4">
                   {['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map(d => (
-                    <span key={d} className="text-[8px] font-black text-white/20">{d}</span>
+                    <span key={d} className="text-[10px] font-black text-white/30">{d}</span>
                   ))}
                 </div>
 
-                <div className="grid grid-cols-7 gap-1">
-                  {Array.from({ length: 31 }, (_, i) => {
-                    const day = i + 1;
-                    const isBooked = [1, 2, 5, 12, 15, 20, 22].includes(day);
-                    const isSelected = date === `2026-05-${day.toString().padStart(2, '0')}`;
+                <div className="grid grid-cols-7 gap-2">
+                  {diasVazios.map(i => <div key={`empty-${i}`} />)}
+
+                  {diasDoMes.map(day => {
+                    const dataRenderizada = new Date(mesAtual.getFullYear(), mesAtual.getMonth(), day);
+                    const dateString = `${mesAtual.getFullYear()}-${(mesAtual.getMonth() + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+                    
+                    const isPassado = dataRenderizada < HOJE_REAL;
+                    // Lógica para bloquear apenas os dias passados (sem os chumbados que tínhamos no teste)
+                    const isDisabled = isPassado;
+
+                    const isSelected = date === dateString;
                     
                     return (
                       <button
                         key={day}
-                        disabled={isBooked}
-                        onClick={() => setDate(`2026-05-${day.toString().padStart(2, '0')}`)}
-                        className={`aspect-square flex items-center justify-center text-[10px] font-black transition-all border ${
+                        disabled={isDisabled}
+                        onClick={() => setDate(dateString)}
+                        className={`aspect-square flex items-center justify-center text-xs font-black transition-all border ${
                           isSelected 
-                            ? 'bg-[#F6911F] border-[#F6911F] text-black scale-110 shadow-lg z-10' 
-                            : isBooked 
-                              ? 'text-white/5 border-transparent cursor-not-allowed line-through' 
-                              : 'text-white/40 border-white/5 hover:border-[#F6911F]/40'
+                            ? 'bg-[#F6911F] border-[#F6911F] text-black scale-110 shadow-lg z-10 rounded-sm' 
+                            : isDisabled 
+                              ? 'text-white/10 border-transparent cursor-not-allowed' 
+                              : 'text-white/60 border-white/5 hover:border-[#F6911F]/40 rounded-sm'
                         }`}
                       >
                         {day}
@@ -171,62 +244,76 @@ export default function ServiceScheduler({ onSuccess }: { onSuccess: () => void 
                     );
                   })}
                 </div>
-                
-                <div className="mt-6 flex items-center gap-6 justify-center">
-                   <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 bg-[#F6911F]" />
-                      <span className="text-[8px] uppercase tracking-widest font-black text-white/20">Selecionado</span>
-                   </div>
-                   <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 border border-white/5" />
-                      <span className="text-[8px] uppercase tracking-widest font-black text-white/20">Disponível</span>
-                   </div>
-                </div>
               </Card>
 
               {/* Details and Slots */}
-              <div className="space-y-6">
-                <Input 
-                  label="Tipo de Serviço" 
-                  placeholder="Ex: Revisão, Performance..." 
-                  value={serviceType}
-                  onChange={(e) => setServiceType(e.target.value)}
-                  icon={<Wrench className="w-4 h-4" />}
-                />
+              <div className="space-y-6 lg:col-span-3">
+                
+                <div className="grid md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                    <label className="text-[10px] uppercase tracking-widest font-black text-white/40 block">Tipo de Serviço</label>
+                    <div className="relative">
+                        <Wrench className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none" />
+                        <select 
+                        value={serviceType}
+                        onChange={(e) => setServiceType(e.target.value)}
+                        className="w-full bg-black border border-white/10 text-white p-4 pl-12 appearance-none focus:border-[#F6911F] outline-none transition-colors rounded-none"
+                        >
+                        {SERVICOS_DISPONIVEIS.map(servico => (
+                            <option key={servico} value={servico}>{servico}</option>
+                        ))}
+                        </select>
+                    </div>
+                    </div>
 
-                <div className="space-y-4">
-                  <label className="text-[10px] uppercase tracking-widest font-black text-white/40 block">Horários Disponíveis</label>
-                  <div className="grid grid-cols-3 gap-2">
-                    {['08:00', '10:00', '13:30', '15:00', '17:30'].map(t => (
-                      <button 
-                        key={t}
-                        onClick={() => setTime(t)}
-                        className={`py-3 border text-[10px] font-mono font-black transition-all ${
-                          time === t 
-                            ? 'bg-[#F6911F]/10 border-[#F6911F] text-[#F6911F]' 
-                            : 'bg-white/1 border-white/5 text-white/30 hover:border-white/20'
-                        }`}
-                      >
-                        {t}
-                      </button>
-                    ))}
-                  </div>
+                    <div className="space-y-4">
+                    <label className="text-[10px] uppercase tracking-widest font-black text-white/40 block">Horários Disponíveis</label>
+                    <div className="grid grid-cols-3 gap-2">
+                        {['08:00', '10:00', '13:30', '15:00', '17:30'].map(t => (
+                        <button 
+                            key={t}
+                            onClick={() => setTime(t)}
+                            className={`py-3 border text-[10px] md:text-xs font-mono font-black transition-all ${
+                            time === t 
+                                ? 'bg-[#F6911F]/10 border-[#F6911F] text-[#F6911F]' 
+                                : 'bg-white/1 border-white/5 text-white/30 hover:border-white/20'
+                            }`}
+                        >
+                            {t}
+                        </button>
+                        ))}
+                    </div>
+                    </div>
                 </div>
 
-                <div className="pt-6">
+                {/* Área de Notas */}
+                <div className="space-y-2 pt-2">
+                  <label className="text-[10px] uppercase tracking-widest font-black text-white/40 flex items-center gap-2">
+                    <StickyNote className="w-3 h-3" />
+                    Observações do Cliente (Opcional)
+                  </label>
+                  <textarea 
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    placeholder="Descreva detalhes como barulhos estranhos, preferência por peças, ou observações sobre o veículo..."
+                    className="w-full bg-white/5 border border-white/10 text-white p-4 text-sm focus:border-[#F6911F] outline-none transition-colors min-h-[100px] resize-y rounded-sm font-light"
+                  />
+                </div>
+
+                <div className="pt-4">
                   <Button 
-                    className="w-full !py-6 group disabled:opacity-50 relative overflow-hidden" 
-                    onClick={handleScheduleMock}
+                    className="w-full !py-6 group disabled:opacity-50 relative overflow-hidden text-lg" 
+                    onClick={handleSchedule}
                     disabled={isSubmitting || !date || !time || !serviceType}
                   >
                     {isSubmitting ? (
                       <div className="flex items-center gap-3 justify-center">
-                        <div className="w-4 h-4 border-2 border-black/20 border-t-black rounded-full animate-spin" />
-                        Processando...
+                        <div className="w-5 h-5 border-2 border-black/20 border-t-black rounded-full animate-spin" />
+                        A Processar...
                       </div>
                     ) : (
                       <div className="flex items-center gap-3 justify-center">
-                        <ShieldCheck className="w-5 h-5 text-black/50" />
+                        <ShieldCheck className="w-6 h-6 text-black/50" />
                         Confirmar Agendamento
                       </div>
                     )}
@@ -244,15 +331,14 @@ export default function ServiceScheduler({ onSuccess }: { onSuccess: () => void 
             animate={{ opacity: 1, scale: 1 }}
             className="text-center py-12"
           >
-            <div className="w-20 h-20 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-8 border border-green-500/20">
-              <CheckCircle2 className="w-10 h-10 text-green-500" />
+            <div className="w-24 h-24 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-8 border border-green-500/20">
+              <CheckCircle2 className="w-12 h-12 text-green-500" />
             </div>
-            <h3 className="text-3xl md:text-4xl font-display font-black uppercase tracking-tighter mb-4">Agendado</h3>
-            <p className="text-white/40 text-xs md:text-sm max-w-md mx-auto mb-12 font-light">
-              Sua solicitação foi enviada. Você receberá uma confirmação em breve.
-              Confira seu Google Calendar para o lembrete.
+            <h3 className="text-3xl md:text-5xl font-display font-black uppercase tracking-tighter mb-4">Agendado com Sucesso</h3>
+            <p className="text-white/40 text-sm md:text-base max-w-md mx-auto mb-12 font-light">
+              O seu serviço foi marcado e o evento foi criado na agenda oficial da Vellux Motors!
             </p>
-            <Button onClick={onSuccess} variant="outline" className="!px-12">Voltar à Garagem</Button>
+            <Button onClick={onSuccess} variant="outline" className="!px-12 !py-4 text-sm">Voltar à Garagem</Button>
           </motion.div>
         )}
       </AnimatePresence>
