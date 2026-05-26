@@ -1,33 +1,45 @@
-name: FrontEnd CI
+name: Frontend CI Pipeline
 
 on:
   push:
-    branches: [ main ]
+    branches: [ "main", "develop" ]
   pull_request:
-    branches: [ main ]
+    branches: [ "main", "develop" ]
 
 jobs:
   build:
+    name: Build & Verify (Node ${{ matrix.node-version }})
     runs-on: ubuntu-latest
-
     strategy:
       matrix:
-        node-version: [20.x]
+        node-version: [20.x, 22.x]
 
     steps:
-    - uses: actions/checkout@v3
-    
-    - name: Setup Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v3
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
-        
-    - name: Install Dependencies
-      run: npm ci
-      
-    - name: Run Linter and Type Check
-      run: npm run lint
-      
-    - name: Build Project
-      run: npm run build
+      - name: 🛎️ Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: 📦 Install Dependencies
+        run: npm ci
+
+      - name: 🛡️ Check Vulnerabilities (Audit)
+        run: npm audit --audit-level=high
+        continue-on-error: true
+
+      - name: 🔍 Linter & Type Check
+        run: npm run lint
+
+      - name: 🏗️ Build Application (Vite)
+        run: npm run build
+
+      - name: 📤 Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist-node-${{ matrix.node-version }}
+          path: dist/
+          retention-days: 7
