@@ -15,29 +15,29 @@ jobs:
         node-version: [20.x, 22.x]
 
     steps:
-      - name: 🛎️ Checkout Repository
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: ⚙️ Setup Node.js ${{ matrix.node-version }}
+      - name: Setup Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
 
-      - name: 📦 Install Dependencies
+      - name: Install Dependencies
         run: npm ci
 
-      - name: 🛡️ Check Vulnerabilities (Audit)
+      - name: Check Vulnerabilities (Audit)
         run: npm audit --audit-level=high
         continue-on-error: true
 
-      - name: 🔍 Linter & Type Check
+      - name: Linter & Type Check
         run: npm run lint
 
-      - name: 🏗️ Build Application (Vite)
+      - name: Build Application (Vite)
         run: npm run build
 
-      - name: 📤 Upload Build Artifacts
+      - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: frontend-dist-node-${{ matrix.node-version }}

@@ -1,13 +1,9 @@
 import React, { ReactNode } from "react";
 
-interface InputProps {
+interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange'> {
   label: string;
-  type?: string;
-  placeholder?: string;
-  value?: string;
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
   icon?: ReactNode;
-  className?: string;
 }
 
 export function Input({ 
@@ -17,7 +13,8 @@ export function Input({
   value, 
   onChange, 
   icon,
-  className = ''
+  className = '',
+  ...props
 }: InputProps) {
   return (
     <div className={`space-y-3 ${className}`}>
@@ -36,6 +33,7 @@ export function Input({
           value={value}
           onChange={onChange}
           className={`w-full bg-white/[0.03] border border-white/10 py-4 ${icon ? 'pl-12' : 'px-6'} pr-6 text-white placeholder:text-white/10 focus:outline-none focus:border-[#F6911F]/40 transition-colors duration-300 font-sans text-sm tracking-wide`}
+          {...props}
         />
       </div>
     </div>
