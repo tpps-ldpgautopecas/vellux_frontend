@@ -98,7 +98,7 @@ export function ClientDashboard({ setView }: ClientDashboardProps) {
                   </div>
                   <Button onClick={() => setView('schedule')} variant="outline" className="w-full md:w-auto !px-4 !py-2">Agendar Novo</Button>
                 </div>
-              <ServiceHistory services={services} setSelectedService={setSelectedService} />
+              <ServiceHistory services={services} />
             </div>
 
             <Card className="bg-[#D4AF37]/5 border-[#D4AF37]/10 p-6 md:p-10">
