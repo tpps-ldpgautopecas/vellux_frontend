@@ -31,21 +31,24 @@ import { ClientDashboard } from './components/client/ClientDashboard';
 export default function App() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [currentView, setCurrentView] = useState<ViewState>('landing');
+  const [hasRedirected, setHasRedirected] = useState(false);
   const { profile, loading } = useAuth();
 
   useEffect(() => {
     if (!loading) {
-      if (!profile && currentView !== 'landing') {
-        setCurrentView('landing');
-      } else if (profile && currentView === 'landing') {
+      if (!profile) {
+        if (currentView !== 'landing') setCurrentView('landing');
+        setHasRedirected(false);
+      } else if (profile && !hasRedirected) {
         if (profile.role === UserRole.ADMIN || profile.role === UserRole.MECHANIC) {
           setCurrentView('admin');
         } else {
           setCurrentView('client');
         }
+        setHasRedirected(true);
       }
     }
-  }, [profile, loading, currentView]);
+  }, [profile, loading, currentView, hasRedirected]);
 
   if (loading) {
     return (
