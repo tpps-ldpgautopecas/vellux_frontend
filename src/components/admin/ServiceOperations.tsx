@@ -14,7 +14,8 @@ import {
   Search,
   X,
   Edit,
-  ClipboardList
+  ClipboardList,
+  Save
 } from 'lucide-react';
 import { Card, Button } from '../ui';
 import { ServiceStatus } from '../../types';
@@ -76,17 +77,33 @@ export function ServiceOperations() {
   const [expectedDelivery, setExpectedDelivery] = useState('');
   const [selectedService, setSelectedService] = useState<OperationService | null>(null);
   const [showReportForm, setShowReportForm] = useState(false);
+  const [isEditingScope, setIsEditingScope] = useState(false);
+  const [editScopeData, setEditScopeData] = useState({ type: '', diagnostics: '' });
 
-  const handleAssignSpecialist = async (serviceId: string, mechanicId: string) => {
+  const handleAssignSpecialist = async (serviceId: string, mechanicId: string, mechanicName?: string) => {
     try {
       await api.post(`/services/${serviceId}/assign`, { mechanicId });
-      fetchServices(); // Refresh the list
+      await fetchServices(); // Refresh the list
+      
+      if (selectedService && selectedService.id === serviceId && mechanicName) {
+         const hasIt = selectedService.mechanics.includes(mechanicName);
+         setSelectedService({
+           ...selectedService,
+           mechanics: hasIt 
+              ? selectedService.mechanics.filter(m => m !== mechanicName)
+              : [...selectedService.mechanics, mechanicName]
+         });
+      }
     } catch (err) {
       console.error(err);
     }
   };
 
-  const startService = async (id: string) => {
+  const startService = async (id: string, mechanicsCount: number) => {
+    if (mechanicsCount === 0) {
+      alert("É necessário atribuir pelo menos um especialista antes de iniciar o serviço.");
+      return;
+    }
     try {
       await api.post(`/services/${id}/start`, {
         expectedDelivery: expectedDelivery ? new Date(expectedDelivery).toISOString() : null
@@ -102,6 +119,21 @@ export function ServiceOperations() {
   const completeService = async (id: string, reportData: any) => {
     try {
       await api.post(`/services/${id}/finish`, reportData);
+      fetchServices();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleUpdateScope = async () => {
+    if (!selectedService) return;
+    try {
+      await api.put(`/services/${selectedService.id}`, {
+        title: editScopeData.type,
+        description: editScopeData.diagnostics
+      });
+      setIsEditingScope(false);
+      setSelectedService(null);
       fetchServices();
     } catch (err) {
       console.error(err);
@@ -218,7 +250,7 @@ export function ServiceOperations() {
                          />
                          <div className="flex gap-2">
                            <Button onClick={() => setStartingService(null)} variant="ghost" className="flex-1 !py-2 text-[9px]">Cancelar</Button>
-                           <Button onClick={() => startService(s.id)} className="flex-1 !bg-yellow-500 !text-black !py-2 text-[9px] font-bold">Confirmar</Button>
+                           <Button onClick={() => startService(s.id, s.mechanics.length)} className="flex-1 !bg-yellow-500 !text-black !py-2 text-[9px] font-bold">Confirmar</Button>
                          </div>
                        </motion.div>
                      )}
@@ -248,7 +280,7 @@ export function ServiceOperations() {
                              return (
                                <button
                                  key={m.id}
-                                 onClick={() => handleAssignSpecialist(s.id, m.id)}
+                                 onClick={() => handleAssignSpecialist(s.id, m.id, m.display_name)}
                                  className={`w-full flex items-center justify-between px-3 py-2 text-[10px] uppercase font-bold transition-colors ${isSelected ? 'bg-yellow-500 text-black' : 'text-white/40 hover:bg-white/5'}`}
                                >
                                  {m.display_name}
@@ -316,9 +348,9 @@ export function ServiceOperations() {
                   </div>
                   
                   <div className="text-right">
-                    <p className="text-[8px] uppercase tracking-widest text-white/20 font-black mb-1">Duração</p>
-                    <div className="flex items-center gap-2 text-white font-mono text-xs sm:text-sm tracking-tighter">
-                       <Clock className="w-3 h-3 text-white/20" /> {s.startTime}
+                    <p className="text-[8px] uppercase tracking-widest text-white/20 font-black mb-1">Início</p>
+                    <div className="flex items-center justify-end gap-2 text-white font-mono text-xs sm:text-[10px] tracking-tighter">
+                       <Clock className="w-3 h-3 text-white/20" /> {s.startTime || 'Não iniciado'}
                     </div>
                   </div>
 
@@ -397,28 +429,71 @@ export function ServiceOperations() {
                       <div>
                         <h4 className="text-[10px] uppercase tracking-widest font-black text-white/40 mb-4">Escopo do Serviço</h4>
                         <div className="p-4 bg-white/2 border border-white/5 space-y-4">
-                           <p className="text-base font-bold text-white uppercase italic">{selectedService.type}</p>
-                           {selectedService.diagnostics && (
-                             <div className="pt-4 border-t border-white/5">
-                               <p className="text-[8px] uppercase tracking-widest text-[#F6911F] font-black mb-2">Diagnóstico Atual</p>
-                               <p className="text-[10px] text-white/60 leading-relaxed italic">{selectedService.diagnostics}</p>
+                           {isEditingScope ? (
+                             <div className="space-y-4">
+                               <div>
+                                 <p className="text-[8px] uppercase tracking-widest text-white/20 font-black mb-2">Serviço Agendado (Título)</p>
+                                 <input 
+                                   type="text" 
+                                   value={editScopeData.type}
+                                   onChange={e => setEditScopeData({...editScopeData, type: e.target.value})}
+                                   className="w-full bg-white/5 border border-white/10 p-3 text-xs text-white focus:outline-none focus:border-yellow-500/40"
+                                 />
+                               </div>
+                               <div>
+                                 <p className="text-[8px] uppercase tracking-widest text-white/20 font-black mb-2">Diagnóstico Atual</p>
+                                 <textarea 
+                                   value={editScopeData.diagnostics}
+                                   onChange={e => setEditScopeData({...editScopeData, diagnostics: e.target.value})}
+                                   rows={3}
+                                   className="w-full bg-white/5 border border-white/10 p-3 text-xs text-white focus:outline-none focus:border-yellow-500/40 resize-none"
+                                 />
+                               </div>
                              </div>
+                           ) : (
+                             <>
+                               <p className="text-base font-bold text-white uppercase italic">{selectedService.type}</p>
+                               {selectedService.diagnostics && (
+                                 <div className="pt-4 border-t border-white/5">
+                                   <p className="text-[8px] uppercase tracking-widest text-[#F6911F] font-black mb-2">Diagnóstico Atual</p>
+                                   <p className="text-[10px] text-white/60 leading-relaxed italic">{selectedService.diagnostics}</p>
+                                 </div>
+                               )}
+                             </>
                            )}
                         </div>
                       </div>
 
                       <div>
                         <h4 className="text-[10px] uppercase tracking-widest font-black text-white/40 mb-4">Equipe Alocada</h4>
-                        <div className="flex flex-wrap gap-2">
-                          {selectedService.mechanics.map((m, i) => (
-                            <div key={i} className="px-3 py-1.5 bg-yellow-500/10 border border-yellow-500/20 text-yellow-500 text-[8px] uppercase font-black tracking-widest">
-                              {m}
-                            </div>
-                          ))}
-                          {selectedService.mechanics.length === 0 && (
-                            <span className="text-[9px] uppercase font-bold text-white/20 italic">Sem especialistas atribuídos</span>
-                          )}
-                        </div>
+                        {isEditingScope ? (
+                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                            {specialists.map(m => {
+                              const isSelected = selectedService.mechanics.includes(m.display_name);
+                              return (
+                                <button
+                                  key={m.id}
+                                  onClick={() => handleAssignSpecialist(selectedService.id, m.id, m.display_name)}
+                                  className={`flex items-center justify-between px-3 py-2 text-[9px] uppercase font-bold transition-colors ${isSelected ? 'bg-yellow-500 text-black' : 'bg-white/5 text-white/40 hover:bg-white/10'}`}
+                                >
+                                  {m.display_name}
+                                  {isSelected && <CheckCircle2 className="w-3 h-3" />}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          <div className="flex flex-wrap gap-2">
+                            {selectedService.mechanics.map((m, i) => (
+                              <div key={i} className="px-3 py-1.5 bg-yellow-500/10 border border-yellow-500/20 text-yellow-500 text-[8px] uppercase font-black tracking-widest">
+                                {m}
+                              </div>
+                            ))}
+                            {selectedService.mechanics.length === 0 && (
+                              <span className="text-[9px] uppercase font-bold text-white/20 italic">Sem especialistas atribuídos</span>
+                            )}
+                          </div>
+                        )}
                       </div>
 
                       {selectedService.parts && selectedService.parts.length > 0 && (
@@ -439,15 +514,42 @@ export function ServiceOperations() {
                           <h4 className="text-[9px] uppercase tracking-widest font-black text-white/40">Controles de Operação</h4>
                         </div>
                         <div className="grid grid-cols-2 gap-4">
-                           <Button 
-                             onClick={() => setShowReportForm(true)}
-                             className="!py-5 !bg-green-600 !text-black text-[10px] font-black uppercase tracking-[0.2em]"
-                           >
-                             <CheckCircle2 className="w-4 h-4 mr-2" /> Finalizar & Relatório
-                           </Button>
-                           <Button variant="ghost" className="!py-5 border border-white/5 text-[10px] font-black uppercase tracking-[0.2em] opacity-40 cursor-not-allowed">
-                             <Edit className="w-3 h-3 mr-2" /> Editar Escopo
-                           </Button>
+                           {isEditingScope ? (
+                             <>
+                               <Button 
+                                 onClick={handleUpdateScope}
+                                 className="!py-5 !bg-yellow-500 !text-black text-[10px] font-black uppercase tracking-[0.2em]"
+                               >
+                                 <Save className="w-4 h-4 mr-2" /> Salvar Alterações
+                               </Button>
+                               <Button 
+                                 onClick={() => setIsEditingScope(false)}
+                                 variant="ghost" 
+                                 className="!py-5 border border-white/5 text-[10px] font-black uppercase tracking-[0.2em]"
+                               >
+                                 Cancelar
+                               </Button>
+                             </>
+                           ) : (
+                             <>
+                               <Button 
+                                 onClick={() => setShowReportForm(true)}
+                                 className="!py-5 !bg-green-600 !text-black text-[10px] font-black uppercase tracking-[0.2em]"
+                               >
+                                 <CheckCircle2 className="w-4 h-4 mr-2" /> Finalizar & Relatório
+                               </Button>
+                               <Button 
+                                 onClick={() => {
+                                   setEditScopeData({ type: selectedService.type, diagnostics: selectedService.diagnostics || '' });
+                                   setIsEditingScope(true);
+                                 }}
+                                 variant="ghost" 
+                                 className="!py-5 border border-white/5 text-[10px] font-black uppercase tracking-[0.2em]"
+                               >
+                                 <Edit className="w-3 h-3 mr-2" /> Editar Escopo
+                               </Button>
+                             </>
+                           )}
                         </div>
                       </div>
                    </div>
@@ -455,7 +557,10 @@ export function ServiceOperations() {
               </div>
 
               <button 
-                onClick={() => setSelectedService(null)}
+                onClick={() => {
+                  setSelectedService(null);
+                  setIsEditingScope(false);
+                }}
                 className="absolute top-6 right-6 w-10 h-10 border border-white/10 flex items-center justify-center hover:bg-yellow-500 hover:text-black transition-all group"
               >
                 <X className="w-5 h-5 text-white/40 group-hover:text-black" />

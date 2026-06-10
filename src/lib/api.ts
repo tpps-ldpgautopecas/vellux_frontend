@@ -48,5 +48,42 @@ export const api = {
     } else {
       throw new Error(`Falha no Servidor (Status ${response.status}). A rota pode estar incorreta.`);
     }
+  },
+  
+  put: async (endpoint: string, body: any) => {
+    const response = await fetch(`${API_URL}${endpoint}`, {
+      method: 'PUT',
+      headers: getHeaders(),
+      body: JSON.stringify(body),
+    });
+    
+    const contentType = response.headers.get("content-type");
+    if (contentType && contentType.includes("application/json")) {
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.erro || 'Ocorreu um erro na requisição');
+      }
+      return data;
+    } else {
+      throw new Error(`Falha no Servidor (Status ${response.status}). A rota pode estar incorreta.`);
+    }
+  },
+
+  delete: async (endpoint: string) => {
+    const response = await fetch(`${API_URL}${endpoint}`, {
+      method: 'DELETE',
+      headers: getHeaders(),
+    });
+    
+    const contentType = response.headers.get("content-type");
+    if (contentType && contentType.includes("application/json")) {
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.erro || 'Ocorreu um erro na requisição');
+      }
+      return data;
+    } else {
+      throw new Error(`Falha no Servidor (Status ${response.status}). A rota pode estar incorreta.`);
+    }
   }
 };
