@@ -50,11 +50,19 @@ export interface MaintenanceService {
   status: ServiceStatus;
   scheduledDate: number;
   startDate?: number;
-  endDate?: number;
+  expectedDelivery?: string;
+  endDate?: string;
   budget?: number;
   items?: string[];
   history: ServiceLog[];
-  report?: TechnicalReport;
+  report?: {
+    serviceName: string;
+    procedures: string[];
+    diagnostics?: string;
+    observations?: string;
+    finalValue: string;
+    parts: { name: string; brand: string; quantity: number }[];
+  };
   vehicleName?: string;
   evaluation?: {
     rating: number;

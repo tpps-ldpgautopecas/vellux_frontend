@@ -187,14 +187,60 @@ export function ClientDashboard({ setView }: ClientDashboardProps) {
                         )) : <li className="text-sm text-white/30">Nenhum histórico registrado.</li>}
                       </ul>
                     </div>
-                    <div>
-                       <h4 className="text-[10px] uppercase tracking-widest font-bold text-white/60 mb-6 flex items-center gap-2">
-                        <Bell className="w-4 h-4 text-[#F6911F]" /> Detalhes do Serviço
-                      </h4>
-                      <p className="text-sm text-white/40 leading-relaxed italic border-l border-white/10 pl-6 py-2">
-                        {detailData.description || 'Sem descrição adicional.'}
-                      </p>
-                    </div>
+
+                    {detailData.report ? (
+                      <div className="space-y-8">
+                         <div>
+                           <h4 className="text-[10px] uppercase tracking-widest font-bold text-white/60 mb-4 flex items-center gap-2">
+                            <Activity className="w-4 h-4 text-[#F6911F]" /> Laudo Técnico Emitido
+                          </h4>
+                          <div className="p-4 bg-white/5 border border-white/10 space-y-4">
+                             <div>
+                               <p className="text-[8px] uppercase font-black tracking-widest text-[#F6911F] mb-1">Diagnóstico</p>
+                               <p className="text-sm text-white/60 italic">{detailData.report.diagnostics || 'Não informado.'}</p>
+                             </div>
+                             {detailData.report.procedures && detailData.report.procedures.length > 0 && (
+                               <div className="pt-4 border-t border-white/5">
+                                 <p className="text-[8px] uppercase font-black tracking-widest text-[#F6911F] mb-2">Procedimentos Adotados</p>
+                                 <ul className="list-disc pl-4 text-sm text-white/60 space-y-1">
+                                   {detailData.report.procedures.map((proc, idx) => (
+                                      <li key={idx}>{proc}</li>
+                                   ))}
+                                 </ul>
+                               </div>
+                             )}
+                             {detailData.report.parts && detailData.report.parts.length > 0 && (
+                               <div className="pt-4 border-t border-white/5">
+                                 <p className="text-[8px] uppercase font-black tracking-widest text-[#F6911F] mb-2">Peças Substituídas</p>
+                                 <ul className="text-sm text-white/60 space-y-1">
+                                   {detailData.report.parts.map((p, idx) => (
+                                      <li key={idx} className="flex justify-between">
+                                        <span>{p.name} <span className="text-white/30">({p.brand})</span></span>
+                                        <span className="font-mono text-white/40">x{p.quantity}</span>
+                                      </li>
+                                   ))}
+                                 </ul>
+                               </div>
+                             )}
+                             {detailData.report.observations && (
+                               <div className="pt-4 border-t border-white/5">
+                                 <p className="text-[8px] uppercase font-black tracking-widest text-[#F6911F] mb-1">Observações</p>
+                                 <p className="text-sm text-white/60">{detailData.report.observations}</p>
+                               </div>
+                             )}
+                          </div>
+                         </div>
+                      </div>
+                    ) : (
+                      <div>
+                         <h4 className="text-[10px] uppercase tracking-widest font-bold text-white/60 mb-6 flex items-center gap-2">
+                          <Bell className="w-4 h-4 text-[#F6911F]" /> Detalhes do Serviço
+                        </h4>
+                        <p className="text-sm text-white/40 leading-relaxed italic border-l border-white/10 pl-6 py-2">
+                          {detailData.description || 'Sem descrição adicional.'}
+                        </p>
+                      </div>
+                    )}
                  </div>
 
                  <div className="p-8 bg-[#F6911F]/5 border border-[#F6911F]/10 flex flex-col md:flex-row justify-between items-center gap-6">

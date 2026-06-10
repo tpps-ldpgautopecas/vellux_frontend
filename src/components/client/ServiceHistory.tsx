@@ -113,8 +113,21 @@ export function ServiceHistory({ services, setSelectedService }: ServiceHistoryP
 
                 <div className="md:w-48 shrink-0 space-y-4">
                    <div className="p-4 bg-white/[0.02] border border-white/5 rounded-sm">
-                      <p className="text-[8px] uppercase tracking-widest text-white/20 font-black mb-2">Previsão Entrega</p>
-                      <p className="text-sm font-black text-white italic">HOJE, 17:30</p>
+                      {service.status === ServiceStatus.COMPLETED ? (
+                        <>
+                          <p className="text-[8px] uppercase tracking-widest text-green-500/80 font-black mb-2">Data e Hora de Entrega</p>
+                          <p className="text-sm font-black text-white italic">
+                            {service.endDate ? new Date(service.endDate).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) : 'N/A'}
+                          </p>
+                        </>
+                      ) : (
+                        <>
+                          <p className="text-[8px] uppercase tracking-widest text-white/20 font-black mb-2">Previsão Entrega</p>
+                          <p className="text-sm font-black text-white/80 italic">
+                            {service.expectedDelivery ? new Date(service.expectedDelivery).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) : 'Sem data prevista'}
+                          </p>
+                        </>
+                      )}
                    </div>
                    <button className="w-full py-4 text-[9px] uppercase tracking-[0.2em] font-black border border-white/5 hover:border-white/20 hover:bg-white/5 transition-all text-white/40 hover:text-white flex items-center justify-center gap-2 group">
                      Solicitar Contato <ChevronRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
