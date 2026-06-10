@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Play, 
@@ -20,6 +20,12 @@ import { Card, Button } from '../ui';
 import { ServiceStatus } from '../../types';
 import { CheckInForm } from './CheckInForm';
 import { TechnicalReportForm } from './TechnicalReportForm';
+import { api } from '../../lib/api';
+
+interface Mechanic {
+  id: string;
+  display_name: string;
+}
 
 interface OperationService {
   id: string;
@@ -37,88 +43,73 @@ interface OperationService {
 export function ServiceOperations() {
   const [showCheckIn, setShowCheckIn] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [services, setServices] = useState<OperationService[]>([
-    { 
-      id: 'S-701', 
-      client: 'Bruno Fontes', 
-      car: 'Ferrari 458 Italia', 
-      plate: 'VLX-4580',
-      type: 'Troca de Discos Cerâmica', 
-      status: ServiceStatus.PENDING,
-      mechanics: [],
-      diagnostics: 'Desgaste excessivo detectado em track day. Necessário substituição do conjunto frontal.',
-      parts: ['Discos Carbono-Cerâmica 398mm', 'Pastilhas Pagid RSC1']
-    },
-    { 
-      id: 'S-702', 
-      client: 'Carla Dias', 
-      car: 'Porsche Taycan S', 
-      plate: 'TYC-2022',
-      type: 'Recalibração Suspensão', 
-      status: ServiceStatus.PENDING,
-      mechanics: ['Ricardo'],
-      diagnostics: 'Aviso de erro no sistema PASM. Nivelamento irregular no eixo traseiro.',
-      parts: ['Sensor de Altura OEM Porsche']
-    },
-    { 
-      id: 'S-698', 
-      client: 'Henrique M.', 
-      car: 'McLaren 720S', 
-      plate: 'MCL-7200',
-      type: 'Revisão Anual', 
-      status: ServiceStatus.IN_PROGRESS,
-      mechanics: ['Marcos', 'André'],
-      startTime: '09:40',
-      diagnostics: 'Revisão periódica de 10.000km. Verificação de fluidos e filtros.',
-      parts: ['Óleo Castrol Edge Professional', 'Filtro de Ar BMC']
-    },
-  ]);
+  const [services, setServices] = useState<OperationService[]>([]);
+  const [specialists, setSpecialists] = useState<Mechanic[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchServices = async () => {
+    try {
+      const res = await api.get('/services/admin');
+      setServices(res || []);
+    } catch (err) {
+      console.error('Erro ao buscar serviços', err);
+    }
+  };
+
+  const fetchMechanics = async () => {
+    try {
+      const res = await api.get('/auth/mechanics');
+      setSpecialists(res || []);
+    } catch (err) {
+      console.error('Erro ao buscar mecânicos', err);
+    }
+  };
+
+  useEffect(() => {
+    fetchServices();
+    fetchMechanics();
+    setLoading(false);
+  }, []);
 
   const [assigningTo, setAssigningTo] = useState<string | null>(null);
-  const [selectedMechanics, setSelectedMechanics] = useState<string[]>([]);
-
   const [selectedService, setSelectedService] = useState<OperationService | null>(null);
   const [showReportForm, setShowReportForm] = useState(false);
 
-  const specialists = ['Marcos', 'Ricardo', 'Juliana', 'André'];
-
-  const handleAssignSpecialist = (serviceId: string, name: string) => {
-    setServices(prev => prev.map(s => {
-      if (s.id === serviceId) {
-        const isSelected = s.mechanics.includes(name);
-        const newMechanics = isSelected 
-          ? s.mechanics.filter(m => m !== name)
-          : [...s.mechanics, name];
-        return { ...s, mechanics: newMechanics };
-      }
-      return s;
-    }));
+  const handleAssignSpecialist = async (serviceId: string, mechanicId: string) => {
+    try {
+      await api.post(`/services/${serviceId}/assign`, { mechanicId });
+      fetchServices(); // Refresh the list
+    } catch (err) {
+      console.error(err);
+    }
   };
 
-  const startService = (id: string) => {
-    setServices(prev => prev.map(s => 
-      s.id === id ? { ...s, status: ServiceStatus.IN_PROGRESS, startTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) } : s
-    ));
+  const startService = async (id: string) => {
+    try {
+      await api.post(`/services/${id}/start`);
+      fetchServices();
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const completeService = (id: string) => {
-    setServices(prev => prev.map(s => 
-      s.id === id ? { ...s, status: ServiceStatus.COMPLETED } : s
-    ));
+    // handled by TechnicalReportForm for now
+    fetchServices();
   };
 
-  const handleNewCheckIn = (data: any) => {
-    const newService: OperationService = {
-      id: `S-${Math.floor(700 + Math.random() * 100)}`,
-      client: data.client,
-      car: data.car,
-      plate: data.plate,
-      type: data.type,
-      status: ServiceStatus.PENDING,
-      mechanics: []
-    };
-    setServices([newService, ...services]);
-    setShowCheckIn(false);
+  const handleNewCheckIn = async (data: any) => {
+    try {
+      await api.post('/services/checkin', {
+        appointmentId: data.id,
+        title: data.type,
+        description: data.observations
+      });
+      setShowCheckIn(false);
+      fetchServices();
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const filteredServices = services.filter(s => 
@@ -218,15 +209,15 @@ export function ServiceOperations() {
                        >
                          <div className="text-[7px] uppercase tracking-widest font-black text-white/20 mb-2 px-2 pb-2 border-b border-white/5">Atribuir Especialistas</div>
                          <div className="space-y-1">
-                           {specialists.map(name => {
-                             const isSelected = s.mechanics.includes(name);
+                           {specialists.map(m => {
+                             const isSelected = s.mechanics.includes(m.display_name);
                              return (
                                <button
-                                 key={name}
-                                 onClick={() => handleAssignSpecialist(s.id, name)}
+                                 key={m.id}
+                                 onClick={() => handleAssignSpecialist(s.id, m.id)}
                                  className={`w-full flex items-center justify-between px-3 py-2 text-[10px] uppercase font-bold transition-colors ${isSelected ? 'bg-yellow-500 text-black' : 'text-white/40 hover:bg-white/5'}`}
                                >
-                                 {name}
+                                 {m.display_name}
                                  {isSelected && <CheckCircle2 className="w-3 h-3" />}
                                </button>
                              );

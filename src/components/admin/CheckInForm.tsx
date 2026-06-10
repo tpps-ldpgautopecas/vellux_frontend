@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   X, 
   Car, 
@@ -9,6 +9,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { Card, Button } from '../ui';
+import { api } from '../../lib/api';
 
 interface CheckInFormProps {
   onCancel: () => void;
@@ -33,11 +34,34 @@ export function CheckInForm({ onCancel, onSave }: CheckInFormProps) {
     observations: ''
   });
 
-  const recentAppointments: ScheduledVehicle[] = [
-    { id: 'V1', client: 'Beto Oliveira', car: 'Porsche 911', plate: 'PR-9110', date: 'Hoje' },
-    { id: 'V2', client: 'Ana Clara', car: 'BMW M3', plate: 'BMW-3333', date: 'Ontem' },
-    { id: 'V3', client: 'Roberto Silva', car: 'Ferrari F430', plate: 'FER-4300', date: 'Há 2 dias' },
-  ];
+  const [recentAppointments, setRecentAppointments] = useState<ScheduledVehicle[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchAppointments = async () => {
+      try {
+        const response = await api.get('/appointments/admin/pendentes');
+        const dataArray = Array.isArray(response) ? response : [];
+        const formatted = dataArray.map((apt: any) => {
+           const d = new Date(apt.date);
+           const formatter = new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+           return {
+             id: apt.id,
+             client: apt.client,
+             car: apt.car,
+             plate: apt.plate,
+             date: formatter.format(d)
+           };
+        });
+        setRecentAppointments(formatted);
+      } catch (err) {
+        console.error('Erro ao buscar agendamentos recentes:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchAppointments();
+  }, []);
 
   const filteredVehicles = recentAppointments.filter(v => 
     v.car.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -103,6 +127,8 @@ export function CheckInForm({ onCancel, onSave }: CheckInFormProps) {
                     </div>
                   </button>
                 ))}
+                {loading && <p className="text-[10px] text-white/40 uppercase tracking-widest p-6 text-center">Buscando agendamentos...</p>}
+                {!loading && filteredVehicles.length === 0 && <p className="text-[10px] text-white/20 uppercase tracking-widest p-6 text-center">Nenhum agendamento encontrado.</p>}
               </div>
             </div>
             

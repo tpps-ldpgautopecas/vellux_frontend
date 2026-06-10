@@ -34,8 +34,16 @@ export default function App() {
   const { profile, loading } = useAuth();
 
   useEffect(() => {
-    if (!loading && !profile && currentView !== 'landing') {
-      setCurrentView('landing');
+    if (!loading) {
+      if (!profile && currentView !== 'landing') {
+        setCurrentView('landing');
+      } else if (profile && currentView === 'landing') {
+        if (profile.role === UserRole.ADMIN || profile.role === UserRole.MECHANIC) {
+          setCurrentView('admin');
+        } else {
+          setCurrentView('client');
+        }
+      }
     }
   }, [profile, loading, currentView]);
 
@@ -76,7 +84,7 @@ export default function App() {
             </motion.div>
           )}
 
-          {currentView === 'admin' && profile?.role === UserRole.ADMIN && (
+          {currentView === 'admin' && (profile?.role === UserRole.ADMIN || profile?.role === UserRole.MECHANIC) && (
             <motion.div
               key="admin"
               initial={{ opacity: 0, x: 20 }}
