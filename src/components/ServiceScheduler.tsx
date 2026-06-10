@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Calendar as CalendarIcon, 
@@ -21,6 +21,7 @@ import {
 import { useAuth } from '../contexts/AuthContext';
 import { Card, Button, Input } from './ui';
 import { api } from '../lib/api';
+import { Vehicle } from '../types';
 
 const SERVICOS_DISPONIVEIS = [
   "Revisão & Mecânica",
@@ -45,11 +46,19 @@ export default function ServiceScheduler({ onSuccess }: { onSuccess: () => void 
   // Controle do calendário (Inicia no mês real do usuário)
   const [mesAtual, setMesAtual] = useState(new Date(HOJE_REAL.getFullYear(), HOJE_REAL.getMonth(), 1));
 
-  // Mock Vehicles (Futuramente virá da API)
-  const vehicles = [
-    { id: '1', make: 'Toyota', model: 'Corolla', plate: 'ABC1D23' },
-    { id: '2', make: 'Honda', model: 'Civic', plate: 'XYZ9K88' }, 
-  ];
+  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+
+  useEffect(() => {
+    const fetchVehicles = async () => {
+      try {
+        const data = await api.get('/vehicles');
+        setVehicles(data);
+      } catch (err) {
+        console.error('Erro ao buscar veículos:', err);
+      }
+    };
+    fetchVehicles();
+  }, []);
 
   // Form State
   const [selectedVehicle, setSelectedVehicle] = useState<string>('');

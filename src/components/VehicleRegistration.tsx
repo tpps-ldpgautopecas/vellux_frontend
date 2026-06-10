@@ -17,6 +17,7 @@ import {
   CalendarDays
 } from 'lucide-react';
 import { Card, Button, Input } from './ui';
+import { api } from '../lib/api';
 
 export default function VehicleRegistration({ onSuccess, onCancel }: { onSuccess: () => void, onCancel: () => void }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -41,11 +42,15 @@ export default function VehicleRegistration({ onSuccess, onCancel }: { onSuccess
     setIsSubmitting(true);
     setError(null);
 
-    // Simulate API delay
-    setTimeout(() => {
-      setIsSubmitting(false);
+    try {
+      await api.post('/vehicles', formData);
       setIsSuccess(true);
-    }, 1500);
+    } catch (err: any) {
+      console.error('Erro ao cadastrar veículo:', err);
+      setError(err.message || "Erro ao registrar veículo. Tente novamente.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (isSuccess) {

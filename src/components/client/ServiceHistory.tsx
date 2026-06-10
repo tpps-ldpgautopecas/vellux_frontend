@@ -4,51 +4,14 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Card } from '../ui';
 import { MaintenanceService, ServiceStatus } from '../../types';
 
-export function ServiceHistory() {
-  const services: MaintenanceService[] = [
-    {
-       id: '3',
-       vehicleId: 'v1',
-       vehicleName: 'FERRARI 488 PISTA',
-       clientId: 'c1',
-       title: 'Execução Técnica: Suspensão Track-Spec',
-       description: 'Seu veículo está na baia 04 sob cuidados da equipe técnica.',
-       status: ServiceStatus.IN_PROGRESS,
-       scheduledDate: Date.now(),
-       mechanicIds: ['Marcos', 'Andre'],
-       history: [
-         { timestamp: Date.now() - 3600000 * 2, status: ServiceStatus.PENDING, message: 'Check-in realizado e veículo posicionado.', authorId: 'system' },
-         { timestamp: Date.now() - 3600000, status: ServiceStatus.IN_PROGRESS, message: 'Desmontagem do conjunto traseiro iniciada.', authorId: 'Marcos' },
-         { timestamp: Date.now() - 1800000, status: ServiceStatus.IN_PROGRESS, message: 'Calibração dos amortecedores Ohlins em andamento.', authorId: 'Andre' },
-       ],
-       budget: 12500,
-    },
-    {
-       id: '1',
-       vehicleId: 'v1',
-       vehicleName: 'PORSCHE 911 GT3 RS',
-       clientId: 'c1',
-       title: 'Troca de Bateria Lithium',
-       description: 'Aguardando liberação logística da peça original.',
-       status: ServiceStatus.AWAITING_PARTS,
-       scheduledDate: Date.now() - 86400000 * 2,
-       history: [],
-       budget: 1850,
-    },
-    {
-       id: '2',
-       vehicleId: 'v1',
-       vehicleName: 'LAMBORGHINI HURACÁN STO',
-       clientId: 'c1',
-       title: 'Manutenção do Painel Digital',
-       description: 'Concluído com sucesso e testado em pista.',
-       status: ServiceStatus.COMPLETED,
-       scheduledDate: Date.now() - 86400000 * 10,
-       history: [],
-       budget: 3200,
-       evaluation: { rating: 5, comment: 'Ótimo serviço', date: Date.now() }
-    }
-  ];
+interface ServiceHistoryProps {
+  services: MaintenanceService[];
+  setSelectedService?: (id: string) => void;
+}
+
+export function ServiceHistory({ services, setSelectedService }: ServiceHistoryProps) {
+  const activeServices = services.filter(s => s.status === ServiceStatus.IN_PROGRESS || s.status === ServiceStatus.PENDING || s.status === ServiceStatus.AWAITING_PARTS);
+  const displayServices = activeServices.length > 0 ? activeServices : services.slice(0, 3); // show active or recent
 
   const getStatusConfig = (status: ServiceStatus) => {
     switch (status) {
@@ -67,12 +30,19 @@ export function ServiceHistory() {
 
   return (
     <div className="space-y-8">
-      {services.map((service) => {
+      {displayServices.length === 0 && (
+        <div className="text-white/40 text-sm text-center py-8 border border-dashed border-white/10">Nenhum serviço recente.</div>
+      )}
+      {displayServices.map((service) => {
         const config = getStatusConfig(service.status);
         const isActive = service.status === ServiceStatus.IN_PROGRESS;
 
         return (
-          <Card key={service.id} className={`relative overflow-hidden group p-0 border-white/5 ${isActive ? 'ring-1 ring-blue-500/30' : ''}`}>
+          <Card 
+            key={service.id} 
+            onClick={() => setSelectedService && setSelectedService(service.id)}
+            className={`relative overflow-hidden group p-0 border-white/5 ${setSelectedService ? 'cursor-pointer hover:border-white/20' : ''} ${isActive ? 'ring-1 ring-blue-500/30' : ''}`}
+          >
             {isActive && (
               <div className="absolute top-0 left-0 right-0 h-1 overflow-hidden">
                 <motion.div 

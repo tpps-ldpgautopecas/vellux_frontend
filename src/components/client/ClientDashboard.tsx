@@ -1,21 +1,47 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Car, Plus, Bell, ArrowUpRight, Clock, ChevronRight, ShieldCheck, CheckCircle2, Activity, Zap, MapPin } from 'lucide-react';
 import { Card, Button } from '../ui';
 import { SectionHeading } from '../layout/SectionHeading';
 import { ServiceHistory } from './ServiceHistory';
-import { ServiceStatus } from '../../types';
+import { ServiceStatus, Vehicle, MaintenanceService } from '../../types';
+import { api } from '../../lib/api';
 
 interface ClientDashboardProps {
   setView: (view: any) => void;
 }
 
 export function ClientDashboard({ setView }: ClientDashboardProps) {
+  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+  const [services, setServices] = useState<MaintenanceService[]>([]);
+  const [loading, setLoading] = useState(true);
   const [selectedVehicle, setSelectedVehicle] = useState<string | null>(null);
   const [selectedService, setSelectedService] = useState<string | null>(null);
 
-  // Mock active service for transparency demonstration
-  const hasActiveService = true;
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const [vehiclesData, servicesData] = await Promise.all([
+          api.get('/vehicles'),
+          api.get('/services')
+        ]);
+        setVehicles(vehiclesData);
+        setServices(servicesData);
+      } catch (err) {
+        console.error('Erro ao buscar dados do dashboard:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  const getServiceForDetail = (serviceId: string) => {
+    return services.find(s => s.id === serviceId) || null;
+  };
+  
+  const detailData = selectedService ? getServiceForDetail(selectedService) : null;
 
   return (
     <div className="py-32 px-6 max-w-5xl mx-auto">
@@ -39,17 +65,20 @@ export function ClientDashboard({ setView }: ClientDashboardProps) {
             className="space-y-12"
           >
             <div className="grid md:grid-cols-2 gap-8">
+              {vehicles.map(vehicle => (
                 <Card 
-                   onClick={() => setSelectedVehicle('CIVIC-123')}
+                   key={vehicle.id}
+                   onClick={() => setSelectedVehicle(vehicle.id)}
                    className="border-[#F6911F]/20 bg-[#F6911F]/5 flex flex-col items-center justify-center py-10 md:py-16 group cursor-pointer hover:bg-[#F6911F]/10 transition-colors"
                  >
                    <div className="w-16 h-16 md:w-20 md:h-20 rounded-sm border border-[#F6911F]/20 flex items-center justify-center mb-6 group-hover:scale-105 transition-transform">
                       <Car className="w-8 h-8 md:w-10 md:h-10 text-[#F6911F]" />
                    </div>
-                   <h3 className="text-2xl md:text-4xl font-display font-black uppercase tracking-tighter mb-2 leading-none text-center px-4">Honda Civic</h3>
-                   <p className="text-[9px] md:text-[10px] uppercase font-black tracking-widest text-[#F6911F] mb-6">BRA-1234</p>
+                   <h3 className="text-2xl md:text-4xl font-display font-black uppercase tracking-tighter mb-2 leading-none text-center px-4">{vehicle.make} {vehicle.model}</h3>
+                   <p className="text-[9px] md:text-[10px] uppercase font-black tracking-widest text-[#F6911F] mb-6">{vehicle.plate}</p>
                    <Button variant="outline" className="!px-6 !py-2">Ver Detalhes</Button>
                 </Card>
+              ))}
                <Card 
                   onClick={() => setView('register-vehicle')}
                   className="flex flex-col items-center justify-center py-16 border-white/5 hover:border-white/10 transition-all cursor-pointer group"
@@ -69,7 +98,7 @@ export function ClientDashboard({ setView }: ClientDashboardProps) {
                   </div>
                   <Button onClick={() => setView('schedule')} variant="outline" className="w-full md:w-auto !px-4 !py-2">Agendar Novo</Button>
                 </div>
-              <ServiceHistory />
+              <ServiceHistory services={services} setSelectedService={setSelectedService} />
             </div>
 
             <Card className="bg-[#D4AF37]/5 border-[#D4AF37]/10 p-6 md:p-10">
@@ -97,11 +126,7 @@ export function ClientDashboard({ setView }: ClientDashboardProps) {
             exit={{ opacity: 0, y: -20 }}
             className="space-y-6"
           >
-            {[
-              { id: '1', date: '15 Mai 2024', title: 'Revisão Sistemática', status: ServiceStatus.COMPLETED, type: 'Mecânica' },
-              { id: '2', date: '22 Abr 2024', title: 'Troca de Óleo e Filtros', status: ServiceStatus.COMPLETED, type: 'Preventiva' },
-              { id: '3', date: '10 Jan 2024', title: 'Alinhamento e Balanceamento', status: ServiceStatus.COMPLETED, type: 'Mecânica' },
-            ].map(item => (
+            {services.filter(s => s.vehicleId === selectedVehicle).map(item => (
               <Card 
                 key={item.id} 
                 onClick={() => setSelectedService(item.id)}
@@ -112,7 +137,7 @@ export function ClientDashboard({ setView }: ClientDashboardProps) {
                     <Clock className="w-5 h-5 text-white/20 group-hover:text-[#D4AF37]" />
                   </div>
                   <div>
-                    <p className="text-[9px] md:text-[10px] text-white/30 mb-1 uppercase tracking-widest font-black leading-none">{item.date} — {item.type}</p>
+                    <p className="text-[9px] md:text-[10px] text-white/30 mb-1 uppercase tracking-widest font-black leading-none">{new Date(item.scheduledDate).toLocaleDateString('pt-BR')} — {item.status}</p>
                     <h4 className="text-lg md:text-xl font-display font-black uppercase tracking-tighter leading-tight">{item.title}</h4>
                   </div>
                 </div>
@@ -132,55 +157,55 @@ export function ClientDashboard({ setView }: ClientDashboardProps) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
           >
-            <Card className="p-6 md:p-12">
-               <div className="flex flex-col md:flex-row justify-between gap-10 mb-12 md:mb-16 pb-12 border-b border-white/5">
-                  <div>
-                    <p className="text-[9px] md:text-[10px] uppercase tracking-widest text-[#D4AF37] font-black mb-4">Relatório Técnico</p>
-                    <h3 className="text-3xl md:text-5xl font-display font-black uppercase tracking-tighter mb-6 leading-none">Revisão Sistemática</h3>
-                    <div className="flex flex-wrap gap-4">
-                       <span className="text-[9px] uppercase tracking-widest px-3 py-1 bg-green-500/10 text-green-500 font-bold rounded-full">Concluído</span>
-                       <span className="text-[9px] uppercase tracking-widest px-3 py-1 bg-white/5 text-white/40 font-bold rounded-full">ID: #SRV-1025</span>
+            {detailData && (
+              <Card className="p-6 md:p-12">
+                 <div className="flex flex-col md:flex-row justify-between gap-10 mb-12 md:mb-16 pb-12 border-b border-white/5">
+                    <div>
+                      <p className="text-[9px] md:text-[10px] uppercase tracking-widest text-[#D4AF37] font-black mb-4">Relatório Técnico</p>
+                      <h3 className="text-3xl md:text-5xl font-display font-black uppercase tracking-tighter mb-6 leading-none">{detailData.title}</h3>
+                      <div className="flex flex-wrap gap-4">
+                         <span className="text-[9px] uppercase tracking-widest px-3 py-1 bg-green-500/10 text-green-500 font-bold rounded-full">{detailData.status}</span>
+                         <span className="text-[9px] uppercase tracking-widest px-3 py-1 bg-white/5 text-white/40 font-bold rounded-full">ID: #SRV-{detailData.id}</span>
+                      </div>
                     </div>
-                  </div>
-                  <div className="text-left md:text-right">
-                     <p className="text-[9px] md:text-[10px] uppercase tracking-widest text-white/20 mb-2 font-black">Responsável</p>
-                     <h4 className="text-lg md:text-xl font-display font-black uppercase tracking-tighter">Téc. Marcos Aurelio</h4>
-                     <p className="text-[9px] text-[#F6911F] mt-1 uppercase font-bold tracking-widest">Especialista High-Performance</p>
-                  </div>
-               </div>
+                 </div>
 
-               <div className="grid md:grid-cols-2 gap-12 mb-16">
-                  <div>
-                    <h4 className="text-[10px] uppercase tracking-widest font-bold text-white/60 mb-6 flex items-center gap-2">
-                      <ShieldCheck className="w-4 h-4 text-[#95191C]" /> Procedimentos Realizados
-                    </h4>
-                    <ul className="space-y-4">
-                      {['Análise computadorizada do motor', 'Troca de buchas da suspensão dianteira', 'Substituição de pastilhas de cerâmica', 'Ajuste de geometria 3D'].map(p => (
-                        <li key={p} className="flex gap-4 text-sm text-white/50 items-start">
-                           <CheckCircle2 className="w-4 h-4 text-[#F6911F] shrink-0 mt-0.5" />
-                           {p}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                  <div>
-                     <h4 className="text-[10px] uppercase tracking-widest font-bold text-white/60 mb-6 flex items-center gap-2">
-                      <Bell className="w-4 h-4 text-[#F6911F]" /> Observações do Especialista
-                    </h4>
-                    <p className="text-sm text-white/40 leading-relaxed italic border-l border-white/10 pl-6 py-2">
-                      "Veículo apresenta excelente estado geral. Notamos um leve desgaste irregular no pneu traseiro direito, possivelmente devido a pressão inadequada. Recomendamos calibragem semanal a 32 PSI."
-                    </p>
-                  </div>
-               </div>
+                 <div className="grid md:grid-cols-2 gap-12 mb-16">
+                    <div>
+                      <h4 className="text-[10px] uppercase tracking-widest font-bold text-white/60 mb-6 flex items-center gap-2">
+                        <ShieldCheck className="w-4 h-4 text-[#95191C]" /> Histórico de Procedimentos
+                      </h4>
+                      <ul className="space-y-4">
+                        {detailData.history && detailData.history.length > 0 ? detailData.history.map((h, i) => (
+                          <li key={i} className="flex gap-4 text-sm text-white/50 items-start">
+                             <CheckCircle2 className="w-4 h-4 text-[#F6911F] shrink-0 mt-0.5" />
+                             <div>
+                               <p className="text-[10px] uppercase font-bold text-white/30 mb-1">{new Date(h.timestamp).toLocaleString('pt-BR')} - {h.authorId || 'Sistema'}</p>
+                               <p>{h.message}</p>
+                             </div>
+                          </li>
+                        )) : <li className="text-sm text-white/30">Nenhum histórico registrado.</li>}
+                      </ul>
+                    </div>
+                    <div>
+                       <h4 className="text-[10px] uppercase tracking-widest font-bold text-white/60 mb-6 flex items-center gap-2">
+                        <Bell className="w-4 h-4 text-[#F6911F]" /> Detalhes do Serviço
+                      </h4>
+                      <p className="text-sm text-white/40 leading-relaxed italic border-l border-white/10 pl-6 py-2">
+                        {detailData.description || 'Sem descrição adicional.'}
+                      </p>
+                    </div>
+                 </div>
 
-               <div className="p-8 bg-[#F6911F]/5 border border-[#F6911F]/10 flex flex-col md:flex-row justify-between items-center gap-6">
-                  <div>
-                    <p className="text-[10px] uppercase tracking-widest text-white/30 mb-2 font-bold">Investimento de Manutenção</p>
-                    <p className="text-3xl font-display italic tracking-tight">R$ 4.250,80</p>
-                  </div>
-                  <Button variant="outline" className="!px-6 !py-2">Download NF-e</Button>
-               </div>
-            </Card>
+                 <div className="p-8 bg-[#F6911F]/5 border border-[#F6911F]/10 flex flex-col md:flex-row justify-between items-center gap-6">
+                    <div>
+                      <p className="text-[10px] uppercase tracking-widest text-white/30 mb-2 font-bold">Investimento de Manutenção</p>
+                      <p className="text-3xl font-display italic tracking-tight">R$ {detailData.budget ? Number(detailData.budget).toLocaleString('pt-BR') : '0,00'}</p>
+                    </div>
+                    <Button variant="outline" className="!px-6 !py-2">Download NF-e</Button>
+                 </div>
+              </Card>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
