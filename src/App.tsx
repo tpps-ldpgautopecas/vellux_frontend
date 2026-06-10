@@ -83,7 +83,7 @@ export default function App() {
               <WorkshopManifesto />
               <WorkshopGallery />
               <QualityAssurance />
-              <Contact />
+              <Contact onAuthClick={() => setIsAuthModalOpen(true)} />
             </motion.div>
           )}
 
