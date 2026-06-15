@@ -5,7 +5,7 @@ import {
 } from 'recharts';
 import { 
   TrendingUp, ArrowUpRight, ArrowDownRight, Download,
-  Calendar, Users, DollarSign, Activity, AlertCircle, Clock
+  Calendar, Users, DollarSign, Activity, AlertCircle, Clock, Star
 } from 'lucide-react';
 import { Card, Button } from '../ui';
 import { api } from '../../lib/api';
@@ -98,11 +98,13 @@ export function FinancialInsights() {
       </div>
 
       {/* High-level KPIs */}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         {[
           { label: 'Receita Total', value: formatCurrency(dashboardData.kpis.totalRevenue), icon: DollarSign, trend: '+12%' },
-          { label: 'Serviços Concluídos', value: dashboardData.kpis.totalServices, icon: Activity, trend: '+5%' },
+          { label: 'Serviços', value: dashboardData.kpis.totalServices, icon: Activity, trend: '+5%' },
           { label: 'Ticket Médio', value: formatCurrency(dashboardData.kpis.averageTicket), icon: TrendingUp, trend: '+2%' },
+          { label: 'NPS', value: dashboardData.kpis.averageSatisfaction > 0 ? `${dashboardData.kpis.averageSatisfaction.toFixed(1)} / 5.0` : 'N/A', icon: Star, trend: '' },
+          { label: 'Tempo Reparo', value: dashboardData.kpis.averageRepairTime > 0 ? `${Math.max(1, Math.round(dashboardData.kpis.averageRepairTime))} dias` : 'N/A', icon: Clock, trend: '' },
         ].map((kpi) => (
           <Card key={kpi.label} className="p-6 border-white/5 bg-gradient-to-br from-white/[0.02] to-transparent relative overflow-hidden group">
             <div className="absolute top-0 right-0 w-32 h-32 bg-[#F6911F]/5 blur-[40px] -mr-10 -mt-10 rounded-full transition-opacity group-hover:bg-[#F6911F]/10" />
@@ -110,13 +112,15 @@ export function FinancialInsights() {
               <div className="w-8 h-8 rounded bg-[#F6911F]/10 border border-[#F6911F]/20 flex items-center justify-center">
                 <kpi.icon className="w-4 h-4 text-[#F6911F]" />
               </div>
-              <div className="flex items-center px-2 py-1 rounded bg-green-500/10 text-[9px] font-black text-green-500 border border-green-500/20">
-                <ArrowUpRight className="w-3 h-3 mr-1" />
-                {kpi.trend}
-              </div>
+              {kpi.trend && (
+                <div className="flex items-center px-2 py-1 rounded bg-green-500/10 text-[9px] font-black text-green-500 border border-green-500/20">
+                  <ArrowUpRight className="w-3 h-3 mr-1" />
+                  {kpi.trend}
+                </div>
+              )}
             </div>
             <p className="text-[9px] uppercase tracking-widest font-black text-white/30 mb-1 relative z-10">{kpi.label}</p>
-            <p className="text-2xl font-display font-black text-white tracking-tighter relative z-10">{kpi.value}</p>
+            <p className="text-xl font-display font-black text-white tracking-tighter relative z-10 truncate">{kpi.value}</p>
           </Card>
         ))}
       </div>
@@ -317,6 +321,52 @@ export function FinancialInsights() {
                  <div className="w-full h-full min-h-[200px] flex items-center justify-center text-white/20 text-xs font-black uppercase tracking-widest">Sem transações no período</div>
               )}
            </div>
+        </Card>
+      </div>
+
+      {/* SLA / Repair Time per Service */}
+      <div className="grid lg:grid-cols-1 gap-6">
+        <Card className="p-6 md:p-8 border-white/5 bg-[#050505]/50 backdrop-blur-xl">
+           <div className="flex items-center justify-between mb-8">
+              <h3 className="text-[10px] uppercase tracking-widest font-black text-white/40">SLA - Tempo Médio de Reparo por Tipo de Serviço</h3>
+              <Clock className="w-4 h-4 text-white/10" />
+           </div>
+           <div className="h-[250px] w-full">
+            {dashboardData.timePerServiceData && dashboardData.timePerServiceData.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={dashboardData.timePerServiceData} layout="vertical" margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" horizontal={true} vertical={false} />
+                  <XAxis type="number" hide />
+                  <YAxis 
+                    dataKey="name" 
+                    type="category" 
+                    stroke="#ffffff20" 
+                    fontSize={10} 
+                    tickLine={false} 
+                    axisLine={false}
+                    tick={{ fill: '#ffffff60', fontWeight: 'bold' }}
+                  />
+                  <Tooltip 
+                    cursor={{ fill: 'rgba(255,255,255,0.02)' }}
+                    contentStyle={{ backgroundColor: 'rgba(10,10,10,0.9)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '4px', fontSize: '12px', fontWeight: 'bold' }}
+                    formatter={(value: number) => [`${Math.max(1, Math.round(value))} dias`, 'Tempo Médio']}
+                  />
+                  <Bar 
+                    dataKey="avgDays" 
+                    fill="#3b82f6" 
+                    radius={[0, 4, 4, 0]} 
+                    barSize={20}
+                  >
+                    {dashboardData.timePerServiceData.map((entry: any, index: number) => (
+                      <Cell key={`cell-${index}`} fill={index === 0 ? '#3b82f6' : 'rgba(59,130,246,0.3)'} stroke={index === 0 ? 'none' : 'rgba(59,130,246,0.2)'} strokeWidth={1} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-white/20 text-xs font-black uppercase tracking-widest">Sem dados</div>
+            )}
+          </div>
         </Card>
       </div>
     </div>
