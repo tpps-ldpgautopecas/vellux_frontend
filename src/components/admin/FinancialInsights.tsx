@@ -5,7 +5,7 @@ import {
 } from 'recharts';
 import { 
   TrendingUp, ArrowUpRight, ArrowDownRight, Download,
-  Calendar, Users, DollarSign, Activity, AlertCircle, Clock, Star
+  Calendar, Users, DollarSign, Activity, AlertCircle, Clock, Star, ChevronDown, Filter
 } from 'lucide-react';
 import { Card, Button } from '../ui';
 import { api } from '../../lib/api';
@@ -14,6 +14,12 @@ const COLORS = ['#F6911F', '#ffffff', '#3b82f6', '#ef4444', '#10b981'];
 
 export function FinancialInsights() {
   const [timeRange, setTimeRange] = useState('month');
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [tempStartDate, setTempStartDate] = useState('');
+  const [tempEndDate, setTempEndDate] = useState('');
+  const [customStartDate, setCustomStartDate] = useState('');
+  const [customEndDate, setCustomEndDate] = useState('');
+
   const [loading, setLoading] = useState(true);
   const [dashboardData, setDashboardData] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
@@ -21,10 +27,18 @@ export function FinancialInsights() {
   useEffect(() => {
     let mounted = true;
     async function fetchData() {
+      if (timeRange === 'custom' && (!customStartDate || !customEndDate)) {
+        return; // wait for valid dates
+      }
+
       setLoading(true);
       setError(null);
       try {
-        const result = await api.get(`/finance/dashboard?range=${timeRange}`);
+        let url = `/finance/dashboard?range=${timeRange}`;
+        if (timeRange === 'custom') {
+          url += `&startDate=${customStartDate}&endDate=${customEndDate}`;
+        }
+        const result = await api.get(url);
         if (mounted) {
           setDashboardData(result);
         }
@@ -39,7 +53,30 @@ export function FinancialInsights() {
     }
     fetchData();
     return () => { mounted = false; };
-  }, [timeRange]);
+  }, [timeRange, customStartDate, customEndDate]);
+
+  const handleApplyCustom = () => {
+    if (tempStartDate && tempEndDate) {
+      setCustomStartDate(tempStartDate);
+      setCustomEndDate(tempEndDate);
+      setTimeRange('custom');
+      setIsFilterOpen(false);
+    }
+  };
+
+  const handlePresetSelect = (range: string) => {
+    setTimeRange(range);
+    setIsFilterOpen(false);
+  };
+
+  const getRangeLabel = () => {
+    if (timeRange === 'week') return 'Última Semana';
+    if (timeRange === 'month') return 'Este Mês';
+    if (timeRange === 'quarter') return 'Trimestre';
+    if (timeRange === 'year') return 'Este Ano';
+    if (timeRange === 'custom') return `${new Date(customStartDate + 'T12:00:00').toLocaleDateString('pt-BR')} - ${new Date(customEndDate + 'T12:00:00').toLocaleDateString('pt-BR')}`;
+    return 'Filtro';
+  };
 
   if (loading) {
     return (
@@ -72,24 +109,64 @@ export function FinancialInsights() {
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
       {/* Filters & Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-50">
         <div>
           <h2 className="text-3xl font-display font-black uppercase tracking-tighter italic text-white leading-none">Inteligência <span className="text-[#F6911F]">Financeira.</span></h2>
           <p className="text-white/30 text-[10px] uppercase tracking-widest font-bold mt-2">Visão analítica de performance e rentabilidade em tempo real</p>
         </div>
         <div className="flex gap-3">
-          <div className="relative group">
-            <select 
-              value={timeRange}
-              onChange={(e) => setTimeRange(e.target.value)}
-              className="appearance-none bg-black/40 backdrop-blur-xl border border-white/10 px-6 py-2.5 text-[10px] uppercase tracking-widest font-black text-white outline-none focus:border-[#F6911F]/50 transition-all cursor-pointer hover:bg-white/5 pr-10 rounded-sm"
+          <div className="relative">
+            <button 
+              onClick={() => setIsFilterOpen(!isFilterOpen)}
+              className="flex items-center gap-2 bg-black/40 backdrop-blur-xl border border-white/10 px-6 py-2.5 text-[10px] uppercase tracking-widest font-black text-white outline-none focus:border-[#F6911F]/50 transition-all hover:bg-white/5 rounded-sm"
             >
-              <option value="week">Última Semana</option>
-              <option value="month">Este Mês</option>
-              <option value="quarter">Trimestre</option>
-              <option value="year">Este Ano</option>
-            </select>
-            <Calendar className="w-3.5 h-3.5 text-white/40 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none group-hover:text-[#F6911F] transition-colors" />
+              <Filter className="w-3.5 h-3.5 text-[#F6911F]" />
+              {getRangeLabel()}
+              <ChevronDown className="w-3.5 h-3.5 text-white/40 ml-2" />
+            </button>
+            
+            {isFilterOpen && (
+              <div className="absolute right-0 top-full mt-2 w-72 bg-[#0a0a0a] border border-white/10 rounded-md shadow-2xl p-4 animate-in fade-in slide-in-from-top-2 z-50">
+                <div className="space-y-1 mb-4">
+                  {['week', 'month', 'quarter', 'year'].map((range) => (
+                    <button
+                      key={range}
+                      onClick={() => handlePresetSelect(range)}
+                      className={`w-full text-left px-3 py-2 text-[10px] uppercase tracking-widest font-bold rounded-sm transition-colors ${timeRange === range && timeRange !== 'custom' ? 'bg-[#F6911F]/10 text-[#F6911F]' : 'text-white/60 hover:bg-white/5 hover:text-white'}`}
+                    >
+                      {range === 'week' ? 'Última Semana' : range === 'month' ? 'Este Mês' : range === 'quarter' ? 'Trimestre' : 'Este Ano'}
+                    </button>
+                  ))}
+                </div>
+                <div className="pt-4 border-t border-white/5 space-y-3">
+                  <p className="text-[10px] uppercase tracking-widest font-black text-white/40">Personalizado</p>
+                  <div className="flex flex-col gap-2">
+                    <input 
+                      type="date" 
+                      value={tempStartDate}
+                      onChange={(e) => setTempStartDate(e.target.value)}
+                      className="bg-black border border-white/10 text-white text-xs px-3 py-2 rounded-sm focus:border-[#F6911F] outline-none"
+                      style={{ colorScheme: 'dark' }}
+                    />
+                    <input 
+                      type="date" 
+                      value={tempEndDate}
+                      onChange={(e) => setTempEndDate(e.target.value)}
+                      className="bg-black border border-white/10 text-white text-xs px-3 py-2 rounded-sm focus:border-[#F6911F] outline-none"
+                      style={{ colorScheme: 'dark' }}
+                    />
+                    <Button 
+                      variant="primary" 
+                      onClick={handleApplyCustom}
+                      className="w-full mt-2 text-[10px] py-2"
+                      disabled={!tempStartDate || !tempEndDate}
+                    >
+                      Aplicar
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
           <Button variant="outline" className="text-[10px] bg-white/[0.02] backdrop-blur-xl border-white/10 hover:border-white/20">
             <Download className="w-3.5 h-3.5 mr-2" /> Exportar Dados
@@ -255,7 +332,7 @@ export function FinancialInsights() {
            <div className="h-[250px] w-full">
             {dashboardData.techPerformanceData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={dashboardData.techPerformanceData} layout="vertical" margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
+                <BarChart data={dashboardData.techPerformanceData} layout="vertical" margin={{ top: 0, right: 20, left: 20, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" horizontal={true} vertical={false} />
                   <XAxis type="number" hide />
                   <YAxis 
@@ -266,6 +343,7 @@ export function FinancialInsights() {
                     tickLine={false} 
                     axisLine={false}
                     tick={{ fill: '#ffffff60', fontWeight: 'bold' }}
+                    width={80}
                   />
                   <Tooltip 
                     cursor={{ fill: 'rgba(255,255,255,0.02)' }}
@@ -334,7 +412,7 @@ export function FinancialInsights() {
            <div className="h-[250px] w-full">
             {dashboardData.timePerServiceData && dashboardData.timePerServiceData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={dashboardData.timePerServiceData} layout="vertical" margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
+                <BarChart data={dashboardData.timePerServiceData} layout="vertical" margin={{ top: 0, right: 20, left: 40, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" horizontal={true} vertical={false} />
                   <XAxis type="number" hide />
                   <YAxis 
@@ -345,6 +423,7 @@ export function FinancialInsights() {
                     tickLine={false} 
                     axisLine={false}
                     tick={{ fill: '#ffffff60', fontWeight: 'bold' }}
+                    width={100}
                   />
                   <Tooltip 
                     cursor={{ fill: 'rgba(255,255,255,0.02)' }}
