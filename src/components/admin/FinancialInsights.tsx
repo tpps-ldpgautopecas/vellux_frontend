@@ -16,18 +16,23 @@ export function FinancialInsights() {
   const [timeRange, setTimeRange] = useState('month');
   const [loading, setLoading] = useState(true);
   const [dashboardData, setDashboardData] = useState<any>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let mounted = true;
     async function fetchData() {
       setLoading(true);
+      setError(null);
       try {
         const result = await api.get(`/finance/dashboard?range=${timeRange}`);
         if (mounted) {
           setDashboardData(result);
         }
-      } catch (err) {
+      } catch (err: any) {
         console.error('Failed to fetch dashboard data:', err);
+        if (mounted) {
+          setError(err.message || 'Erro ao carregar dados do dashboard.');
+        }
       } finally {
         if (mounted) setLoading(false);
       }
@@ -36,10 +41,22 @@ export function FinancialInsights() {
     return () => { mounted = false; };
   }, [timeRange]);
 
-  if (loading || !dashboardData) {
+  if (loading) {
     return (
       <div className="flex items-center justify-center h-[60vh]">
         <div className="w-8 h-8 border-2 border-[#F6911F] border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (error || !dashboardData) {
+    return (
+      <div className="flex flex-col items-center justify-center h-[60vh] text-center space-y-4">
+        <AlertCircle className="w-12 h-12 text-red-500/50" />
+        <div>
+          <p className="text-white font-bold">{error || 'Não foi possível carregar os dados.'}</p>
+          <p className="text-white/50 text-sm mt-2">Por favor, faça login novamente ou atualize a página.</p>
+        </div>
       </div>
     );
   }
