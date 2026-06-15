@@ -135,8 +135,8 @@ export function Overview({ setActiveTab }: OverviewProps) {
                       service.status === 'awaiting_parts' ? 'border-red-500/20 text-red-500' :
                       'border-yellow-500/20 text-yellow-500'
                     } text-[8px] font-black uppercase tracking-widest shrink-0 bg-black/40`}>
-                      {service.status === 'in_progress' ? 'Em Alocação' : 
-                       service.status === 'awaiting_parts' ? 'Aguardando Peças' : 'Pendente'}
+                      {service.status === 'in_progress' ? 'Em Execução' : 
+                       service.status === 'awaiting_parts' ? 'Aguardando Peças' : 'Em Alocação'}
                     </div>
                   </div>
                 </div>
