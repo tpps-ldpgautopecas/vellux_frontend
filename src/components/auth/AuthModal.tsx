@@ -13,10 +13,16 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const { signIn, signUp } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
+  const [emailError, setEmailError] = useState("");
   const [password, setPassword] = useState('');
+  const [passwordError, setPasswordError] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [displayName, setDisplayName] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [phoneError, setPhoneError] = useState(""); 
   const [errorMsg, setErrorMsg] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   if (!isOpen) return null;
 
@@ -25,17 +31,102 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
     setErrorMsg('');
     setLoading(true);
 
+     if (password !== confirmPassword) {
+      setErrorMsg("As senhas não coincidem.");
+      return;
+    }
+
+     if (!validateEmail(email)) {
+    setErrorMsg("Digite um e-mail válido.");
+    return;
+    }
+
+    const isPasswordValid = Object.values(passwordValidation).every(Boolean);
+    if (!isPasswordValid) {
+      setErrorMsg("A senha não atende aos requisitos.");
+      return;
+    }
+
     try {
       if (isLogin) {
         await signIn({ email, password });
       } else {
-        await signUp({ display_name: displayName, email, password });
+        await signUp({ display_name: displayName, email, password, phoneNumber});
       }
+      clearForm();
       onClose(); // Fecha o modal ao logar com sucesso
+
     } catch (err: any) {
       setErrorMsg(err.message || 'Ocorreu um erro ao autenticar.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const clearForm = () => {
+    setDisplayName("");
+    setEmail("");
+    setPassword("");
+    setConfirmPassword("");
+    setPhoneNumber("");
+    setErrorMsg("");
+  };
+  
+  const validateEmail = (value: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(value);
+  };
+
+  const handleEmailBlur = (e: any) => {
+    const value = e.target.value;
+    if (!isLogin && value && !validateEmail(value)) {
+      setEmailError("Digite um e-mail válido");
+    } else {
+      setEmailError("");
+    }
+  };
+
+  const passwordValidation = {
+    minLength: password.length >= 8,
+    hasUppercase: /[A-Z]/.test(password),
+    hasLowercase: /[a-z]/.test(password),
+    hasNumber: /\d/.test(password),
+    hasSpecialChar: /[@$!%*?&.#_-]/.test(password),
+    hasNoSpaces: !/\s/.test(password),
+  };
+
+  const passwordsMatch =
+    confirmPassword.length > 0 && password === confirmPassword;   
+
+  const formatPhoneNumber = (value) => {
+    const numbers = value.replace(/\D/g, "");
+
+    if (numbers.length <= 10) {
+      return numbers
+        .replace(/(\d{2})(\d)/, "($1) $2")
+        .replace(/(\d{4})(\d)/, "$1-$2");
+    }
+
+    return numbers
+      .replace(/(\d{2})(\d)/, "($1) $2")
+      .replace(/(\d{5})(\d)/, "$1-$2");
+  };
+
+  const handlePhoneChange = (e) => {
+    const formatted = formatPhoneNumber(e.target.value);
+    setPhoneNumber(formatted);
+  };
+
+  const validatePhone = (value) => {
+    const numbers = value.replace(/\D/g, "");
+    return numbers.length === 10 || numbers.length === 11;
+  };
+
+  const handlePhoneBlur = () => {
+    if (!validatePhone(phoneNumber)) {
+      setPhoneError("Digite um telefone válido.");
+    } else {
+      setPhoneError("");
     }
   };
 
@@ -77,22 +168,114 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
                 required
               />
             )}
-            <Input 
-              label="E-mail" 
-              type="email" 
-              placeholder="seu@email.com" 
+
+           <Input
+              label="E-mail"
+              type="email"
+              placeholder="seu@email.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              onBlur={handleEmailBlur}
               required
             />
+
+            {emailError && (
+              <p className="text-red-500 text-sm mt-1">
+                {emailError}
+              </p>
+            )}
+
+            <div className="relative">
             <Input 
               label="Senha" 
-              type="password" 
+              type={showPassword ? "text" : "password"} 
               placeholder="••••••••" 
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
             />
+
+             <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-9 text-sm text-gray-500"
+              >
+                {showPassword ? "Ocultar" : "Mostrar"}
+              </button>
+            </div>
+
+            {!isLogin && password.length > 0 && (
+              <ul className="mt-2 text-sm">
+                <li className={passwordValidation.minLength ? "text-green-600" : "text-red-500"}>
+                  {passwordValidation.minLength ? "✓" : "✗"} Mínimo de 8 caracteres
+                </li>
+
+                <li className={passwordValidation.hasUppercase ? "text-green-600" : "text-red-500"}>
+                  {passwordValidation.hasUppercase ? "✓" : "✗"} Pelo menos uma letra maiúscula
+                </li>
+
+                <li className={passwordValidation.hasLowercase ? "text-green-600" : "text-red-500"}>
+                  {passwordValidation.hasLowercase ? "✓" : "✗"} Pelo menos uma letra minúscula
+                </li>
+
+                <li className={passwordValidation.hasNumber ? "text-green-600" : "text-red-500"}>
+                  {passwordValidation.hasNumber ? "✓" : "✗"} Pelo menos um número
+                </li>
+
+                <li className={passwordValidation.hasSpecialChar ? "text-green-600" : "text-red-500"}>
+                  {passwordValidation.hasSpecialChar ? "✓" : "✗"} Pelo menos um caractere especial
+                </li>
+
+                <li className={passwordValidation.hasNoSpaces ? "text-green-600" : "text-red-500"}>
+                  {passwordValidation.hasNoSpaces ? "✓" : "✗"} Não conter espaços
+                </li>
+              </ul>
+            )}
+
+           {!isLogin && (<div className="relative"><Input
+              label="Confirmar Senha"
+              type={showPassword ? "text" : "password"}
+              placeholder="Digite a senha novamente"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-9 text-sm text-gray-500"
+            >
+              {showPassword ? "Ocultar" : "Mostrar"}
+            </button>
+          </div>
+           )}
+            {!isLogin && confirmPassword.length > 0 && (
+              <p
+                className={`text-sm mt-1 ${
+                  passwordsMatch ? "text-green-600" : "text-red-500"
+                }`}
+              >
+                {passwordsMatch
+                  ? "As senhas coincidem"
+                  : "As senhas não coincidem"}
+              </p>
+            )}
+
+            {!isLogin && (<Input
+              label="Telefone"
+              type="tel"
+              placeholder="(61) 99999-9999"
+              value={phoneNumber}
+              onChange={handlePhoneChange}
+              onBlur={handlePhoneBlur}
+              required
+            />)}
+
+            {!isLogin && phoneError && (
+              <p className="text-red-500 text-sm mt-1">
+                {phoneError}
+              </p>
+            )}
             
             <Button type="submit" className="w-full !py-5" disabled={loading}>
               {loading ? 'Aguarde...' : (isLogin ? 'Autenticar' : 'Criar Conta')}
