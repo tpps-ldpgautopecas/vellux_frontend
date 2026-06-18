@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Plus } from 'lucide-react';
 import { Card, Input, Button } from '../ui';
@@ -138,7 +138,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
         exit={{ opacity: 0, scale: 0.9 }}
         className="w-full max-w-md"
       >
-        <Card className="relative p-10 md:p-12">
+        <Card className="relative w-full p-8 md:p-12 max-h-[90vh] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           <button onClick={onClose} className="absolute top-8 right-8 text-white/20 hover:text-white transition-colors">
             <Plus className="rotate-45 w-6 h-6" />
           </button>
