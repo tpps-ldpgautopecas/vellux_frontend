@@ -9,8 +9,6 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import jsPDF from 'jspdf';
-import { toPng } from 'html-to-image';
 import { Card, Button } from '../ui';
 import { api } from '../../lib/api';
 
@@ -27,7 +25,6 @@ export function FinancialInsights() {
   const [loading, setLoading] = useState(true);
   const [dashboardData, setDashboardData] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
-  const [isExporting, setIsExporting] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -83,58 +80,6 @@ export function FinancialInsights() {
     return 'Filtro';
   };
 
-  const handleExportPDF = async () => {
-    setIsExporting(true);
-    try {
-      const element = document.getElementById('financial-report-content');
-      if (!element) return;
-      const imgData = await toPng(element, { 
-        cacheBust: true, 
-        backgroundColor: '#0a0a0a',
-        pixelRatio: 2
-      });
-      
-      const img = new Image();
-      img.src = imgData;
-      await new Promise((resolve) => { img.onload = resolve; });
-
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pageHeight = pdf.internal.pageSize.getHeight();
-      const imgHeight = (img.height * pdfWidth) / img.width;
-      
-      pdf.setFillColor(10, 10, 10);
-      pdf.rect(0, 0, pdfWidth, 20, 'F');
-      
-      pdf.setTextColor(246, 145, 31);
-      pdf.setFontSize(14);
-      pdf.text('VELLUX - RELATÓRIO FINANCEIRO', 10, 13);
-      
-      pdf.setTextColor(150, 150, 150);
-      pdf.setFontSize(9);
-      pdf.text(`Período: ${getRangeLabel()}`, pdfWidth - 10, 13, { align: 'right' });
-
-      let heightLeft = imgHeight;
-      let position = 20;
-
-      pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight);
-      heightLeft -= (pageHeight - 20);
-
-      while (heightLeft > 0) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight);
-        heightLeft -= pageHeight;
-      }
-
-      pdf.save(`vellux_financeiro_${new Date().getTime()}.pdf`);
-    } catch (error) {
-      console.error("Erro ao gerar PDF:", error);
-    } finally {
-      setIsExporting(false);
-    }
-  };
-
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
   };
@@ -164,9 +109,9 @@ export function FinancialInsights() {
   };
 
   return (
-    <div id="financial-report-content" className="space-y-8 animate-in fade-in duration-700 bg-[#0A0A0A] p-2 md:p-6 -mx-2 md:-mx-6 rounded-xl">
+    <div className="space-y-8 animate-in fade-in duration-700">
       {/* Filters & Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-50" data-html2canvas-ignore>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-50">
         <div>
           <h2 className="text-3xl font-display font-black uppercase tracking-tighter italic text-white leading-none">Inteligência <span className="text-[#F6911F]">Financeira.</span></h2>
           <p className="text-white/30 text-[10px] uppercase tracking-widest font-bold mt-2">Visão analítica de performance e rentabilidade em tempo real</p>
@@ -225,18 +170,8 @@ export function FinancialInsights() {
               </div>
             )}
           </div>
-          <Button 
-            onClick={handleExportPDF} 
-            disabled={isExporting}
-            variant="outline" 
-            className="text-[10px] bg-white/[0.02] backdrop-blur-xl border-white/10 hover:border-white/20"
-          >
-            {isExporting ? (
-              <div className="w-3.5 h-3.5 mr-2 border-2 border-[#F6911F] border-t-transparent rounded-full animate-spin" />
-            ) : (
-              <Download className="w-3.5 h-3.5 mr-2" /> 
-            )}
-            {isExporting ? 'Exportando...' : 'Exportar Dados'}
+          <Button variant="outline" className="text-[10px] bg-white/[0.02] backdrop-blur-xl border-white/10 hover:border-white/20">
+            <Download className="w-3.5 h-3.5 mr-2" /> Exportar Dados
           </Button>
         </div>
       </div>
