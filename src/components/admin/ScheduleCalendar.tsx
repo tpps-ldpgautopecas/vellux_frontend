@@ -22,28 +22,90 @@ interface ScheduleItem {
   mechanics: string[];
 }
 
+import { api } from '../../lib/api';
+
 export function ScheduleCalendar() {
   const [currentDate, setCurrentDate] = useState(new Date());
-  
-  const weeklySchedule: Record<string, ScheduleItem[]> = {
-    'Segunda': [
-      { id: '1', client: 'Beto Oliveira', car: 'Porsche 911', time: '09:00', type: 'Revisão', status: ServiceStatus.IN_PROGRESS, mechanics: ['Marcos'] },
-      { id: '2', client: 'Ana Clara', car: 'BMW M3', time: '14:00', type: 'PPF', status: ServiceStatus.PENDING, mechanics: [] },
-    ],
-    'Terça': [
-      { id: '3', client: 'Roberto Silva', car: 'Ferrari F430', time: '10:30', type: 'Embreagem', status: ServiceStatus.AWAITING_PARTS, mechanics: ['Ricardo'] },
-    ],
-    'Quarta': [
-      { id: '4', client: 'Marcos Viana', car: 'Mercedes C63', time: '08:30', type: 'Remap', status: ServiceStatus.PENDING, mechanics: [] },
-      { id: '5', client: 'Sandra Lima', car: 'Audi R8', time: '16:00', type: 'Troca Óleo', status: ServiceStatus.PENDING, mechanics: [] },
-    ],
-    'Quinta': [],
-    'Sexta': [
-      { id: '6', client: 'Paulo G.', car: 'Mustang GT', time: '11:00', type: 'Suspensão', status: ServiceStatus.IN_PROGRESS, mechanics: ['André', 'Ricardo'] },
-    ],
+  const [loading, setLoading] = useState(true);
+  const [weeklySchedule, setWeeklySchedule] = useState<Record<string, ScheduleItem[]>>({
+    'Segunda': [], 'Terça': [], 'Quarta': [], 'Quinta': [], 'Sexta': []
+  });
+
+  const fetchSchedule = async () => {
+    try {
+      setLoading(true);
+      const [appointmentsData, servicesData] = await Promise.all([
+        api.get('/appointments/admin/pendentes').catch(() => []),
+        api.get('/services/admin').catch(() => [])
+      ]);
+
+      const schedule: Record<string, ScheduleItem[]> = {
+        'Segunda': [], 'Terça': [], 'Quarta': [], 'Quinta': [], 'Sexta': []
+      };
+
+      const getDayName = (dateString: string) => {
+        const date = new Date(dateString);
+        const dayNames = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+        return dayNames[date.getDay()];
+      };
+
+      const formatTime = (dateString: string) => {
+        const date = new Date(dateString);
+        return date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+      };
+
+      // Process appointments (Pendentes)
+      appointmentsData.forEach((app: any) => {
+        const day = getDayName(app.date);
+        if (schedule[day]) {
+          schedule[day].push({
+            id: `app-${app.id}`,
+            client: app.client,
+            car: app.car,
+            time: formatTime(app.date),
+            type: app.service_type || 'Serviço',
+            status: ServiceStatus.PENDING,
+            mechanics: []
+          });
+        }
+      });
+
+      // Process services
+      servicesData.forEach((srv: any) => {
+        const day = getDayName(srv.date || srv.startTime); // Ensure date exists
+        if (schedule[day]) {
+          schedule[day].push({
+            id: `srv-${srv.id}`,
+            client: srv.client,
+            car: srv.car,
+            time: srv.startTime ? srv.startTime.split(' ')[1] : formatTime(srv.date),
+            type: srv.type,
+            status: srv.status,
+            mechanics: srv.mechanics || []
+          });
+        }
+      });
+
+      // Sort items by time
+      Object.keys(schedule).forEach(day => {
+        schedule[day].sort((a, b) => a.time.localeCompare(b.time));
+      });
+
+      setWeeklySchedule(schedule);
+    } catch (error) {
+      console.error("Erro ao buscar agenda:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
+  React.useEffect(() => {
+    fetchSchedule();
+  }, [currentDate]);
+
   const days = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta'];
+
+  const monthYear = currentDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
 
   return (
     <div className="space-y-8">
@@ -53,8 +115,8 @@ export function ScheduleCalendar() {
             <ChevronLeft className="w-5 h-5" />
           </Button>
           <div className="text-center">
-            <h3 className="text-lg font-display font-black uppercase tracking-tighter">Abril 2026</h3>
-            <p className="text-[9px] text-white/30 uppercase tracking-widest font-bold">Semana 17</p>
+            <h3 className="text-lg font-display font-black uppercase tracking-tighter">{monthYear}</h3>
+            <p className="text-[9px] text-white/30 uppercase tracking-widest font-bold">Semana Atual</p>
           </div>
           <Button variant="ghost" className="!p-2">
             <ChevronRight className="w-5 h-5" />
@@ -72,7 +134,12 @@ export function ScheduleCalendar() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 sm:gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 sm:gap-4 relative min-h-[400px]">
+        {loading && (
+          <div className="absolute inset-0 z-10 flex items-center justify-center bg-[#0A0A0A]/50 backdrop-blur-sm">
+            <div className="w-8 h-8 border-2 border-[#F6911F] border-t-transparent rounded-full animate-spin" />
+          </div>
+        )}
         {days.map((day) => (
           <div key={day} className="space-y-4">
             <div className="text-left sm:text-center py-2 sm:py-4 border-b border-white/10 sm:border-white/5 bg-white/[0.01] px-4 sm:px-0">
