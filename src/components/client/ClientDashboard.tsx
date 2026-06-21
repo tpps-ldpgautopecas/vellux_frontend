@@ -268,7 +268,7 @@ export function ClientDashboard({ setView }: ClientDashboardProps) {
                                  <p className="text-sm text-white/60 whitespace-pre-wrap">{detailData.report.observations}</p>
                                </div>
                              )}
-                          </div>                         </div>
+                          </div>
                          </div>
                       </div>
                     ) : (
