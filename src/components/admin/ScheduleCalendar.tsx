@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import { 
-  ChevronLeft, 
-  ChevronRight, 
-  Clock, 
-  UserPlus, 
+import {
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  UserPlus,
   Car,
   CheckCircle2,
   AlertCircle
@@ -31,6 +31,28 @@ export function ScheduleCalendar() {
     'Segunda': [], 'Terça': [], 'Quarta': [], 'Quinta': [], 'Sexta': []
   });
 
+  const getWeekStart = (date: Date) => {
+    const d = new Date(date);
+    const day = d.getDay();
+    const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+    return new Date(d.setDate(diff));
+  };
+
+  const weekStart = getWeekStart(currentDate);
+  weekStart.setHours(0, 0, 0, 0);
+  
+  const weekEnd = new Date(weekStart);
+  weekEnd.setDate(weekStart.getDate() + 6);
+  weekEnd.setHours(23, 59, 59, 999);
+
+  const previousWeek = () => {
+    setCurrentDate(new Date(currentDate.getTime() - 7 * 24 * 60 * 60 * 1000));
+  };
+
+  const nextWeek = () => {
+    setCurrentDate(new Date(currentDate.getTime() + 7 * 24 * 60 * 60 * 1000));
+  };
+
   const fetchSchedule = async () => {
     try {
       setLoading(true);
@@ -54,8 +76,14 @@ export function ScheduleCalendar() {
         return date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
       };
 
+      const isDateInCurrentWeek = (dateString: string) => {
+        const d = new Date(dateString);
+        return d >= weekStart && d <= weekEnd;
+      };
+
       // Process appointments (Pendentes)
       appointmentsData.forEach((app: any) => {
+        if (!isDateInCurrentWeek(app.date)) return;
         const day = getDayName(app.date);
         if (schedule[day]) {
           schedule[day].push({
@@ -72,7 +100,7 @@ export function ScheduleCalendar() {
 
       // Process services
       servicesData.forEach((srv: any) => {
-        if (!srv.date) return;
+        if (!srv.date || !isDateInCurrentWeek(srv.date)) return;
         const day = getDayName(srv.date);
         if (schedule[day]) {
           schedule[day].push({
@@ -112,30 +140,32 @@ export function ScheduleCalendar() {
     <div className="space-y-8">
       <div className="flex flex-col sm:flex-row items-center justify-between bg-white/2 border border-white/5 p-4 sm:p-6 gap-6">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" className="!p-2">
+          <Button variant="ghost" className="!p-2" onClick={previousWeek}>
             <ChevronLeft className="w-5 h-5" />
           </Button>
-          <div className="text-center">
+          <div className="text-center min-w-[120px]">
             <h3 className="text-lg font-display font-black uppercase tracking-tighter">{monthYear}</h3>
-            <p className="text-[9px] text-white/30 uppercase tracking-widest font-bold">Semana Atual</p>
+            <p className="text-[9px] text-white/30 uppercase tracking-widest font-bold">
+              Semana de {weekStart.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
+            </p>
           </div>
-          <Button variant="ghost" className="!p-2">
+          <Button variant="ghost" className="!p-2" onClick={nextWeek}>
             <ChevronRight className="w-5 h-5" />
           </Button>
         </div>
         <div className="flex gap-4 border-t border-white/5 pt-4 sm:pt-0 sm:border-none w-full sm:w-auto justify-center">
-           <div className="flex items-center gap-2">
-             <span className="w-2 h-2 rounded-full bg-blue-500" />
-             <span className="text-[8px] uppercase tracking-widest text-white/40 font-bold">Em Andamento</span>
-           </div>
-           <div className="flex items-center gap-2">
-             <span className="w-2 h-2 rounded-full bg-yellow-500" />
-             <span className="text-[8px] uppercase tracking-widest text-white/40 font-bold">Pendente</span>
-           </div>
-           <div className="flex items-center gap-2">
-             <span className="w-2 h-2 rounded-full bg-green-500" />
-             <span className="text-[8px] uppercase tracking-widest text-white/40 font-bold">Concluído</span>
-           </div>
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-blue-500" />
+            <span className="text-[8px] uppercase tracking-widest text-white/40 font-bold">Em Andamento</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-yellow-500" />
+            <span className="text-[8px] uppercase tracking-widest text-white/40 font-bold">Pendente</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-green-500" />
+            <span className="text-[8px] uppercase tracking-widest text-white/40 font-bold">Concluído</span>
+          </div>
         </div>
       </div>
 
@@ -148,38 +178,37 @@ export function ScheduleCalendar() {
         {days.map((day) => (
           <div key={day} className="space-y-4">
             <div className="text-left sm:text-center py-2 sm:py-4 border-b border-white/10 sm:border-white/5 bg-white/[0.01] px-4 sm:px-0">
-               <p className="text-[10px] uppercase tracking-[0.3em] font-black text-[#F6911F] sm:text-white/40">{day}</p>
+              <p className="text-[10px] uppercase tracking-[0.3em] font-black text-[#F6911F] sm:text-white/40">{day}</p>
             </div>
-            
+
             <div className="space-y-3 lg:min-h-[400px] px-4 sm:px-0">
               {weeklySchedule[day]?.length > 0 ? (
                 weeklySchedule[day].map((item) => (
-                  <Card 
-                    key={item.id} 
-                    className={`p-5 lg:p-4 border-l-2 hover:border-[#F6911F]/40 transition-all group cursor-pointer ${
-                      item.status === ServiceStatus.IN_PROGRESS ? 'border-l-blue-500' : 
-                      item.status === ServiceStatus.AWAITING_PARTS ? 'border-l-red-500' : 
-                      item.status === ServiceStatus.COMPLETED ? 'border-l-green-500 opacity-60' : 'border-l-yellow-500'
-                    }`}
+                  <Card
+                    key={item.id}
+                    className={`p-5 lg:p-4 border-l-2 hover:border-[#F6911F]/40 transition-all group cursor-pointer ${item.status === ServiceStatus.IN_PROGRESS ? 'border-l-blue-500' :
+                        item.status === ServiceStatus.AWAITING_PARTS ? 'border-l-red-500' :
+                          item.status === ServiceStatus.COMPLETED ? 'border-l-green-500 opacity-60' : 'border-l-yellow-500'
+                      }`}
                   >
                     <div className="flex items-center justify-between mb-3">
-                       <span className="text-[10px] sm:text-[9px] font-mono text-white/40">{item.time}</span>
-                       {item.mechanics.length > 0 ? (
-                         <div className="flex -space-x-2">
-                           {item.mechanics.map(m => (
-                             <div key={m} title={m} className="w-6 h-6 sm:w-5 sm:h-5 rounded-full bg-[#F6911F] text-black text-[8px] sm:text-[7px] flex items-center justify-center font-bold border border-black uppercase">
-                               {m[0]}
-                             </div>
-                           ))}
-                         </div>
-                       ) : (
-                         <UserPlus className="w-3 h-3 text-[#F6911F] animate-pulse" />
-                       )}
+                      <span className="text-[10px] sm:text-[9px] font-mono text-white/40">{item.time}</span>
+                      {item.mechanics.length > 0 ? (
+                        <div className="flex -space-x-2">
+                          {item.mechanics.map(m => (
+                            <div key={m} title={m} className="w-6 h-6 sm:w-5 sm:h-5 rounded-full bg-[#F6911F] text-black text-[8px] sm:text-[7px] flex items-center justify-center font-bold border border-black uppercase">
+                              {m[0]}
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <UserPlus className="w-3 h-3 text-[#F6911F] animate-pulse" />
+                      )}
                     </div>
-                    
+
                     <h4 className="text-[12px] sm:text-[11px] font-display font-black uppercase tracking-tight text-white group-hover:text-[#F6911F] transition-colors">{item.car}</h4>
                     <p className="text-[9px] sm:text-[8px] text-white/30 uppercase tracking-widest mb-3">{item.client}</p>
-                    
+
                     <div className="flex items-center gap-2 text-[8px] sm:text-[7px] uppercase tracking-widest font-black text-white/20">
                       <Clock className="w-3 h-3 sm:w-2.5 sm:h-2.5" /> {item.type}
                     </div>
@@ -195,16 +224,6 @@ export function ScheduleCalendar() {
         ))}
       </div>
 
-      <Card className="bg-[#F6911F]/5 border-[#F6911F]/10 p-6 sm:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-        <div className="flex items-start gap-4">
-          <AlertCircle className="w-6 h-6 text-[#F6911F] shrink-0" />
-          <div>
-            <p className="text-[10px] uppercase tracking-widest font-black text-white/80">Otimização de Escala</p>
-            <p className="text-[9px] uppercase tracking-widest text-white/30 font-medium leading-relaxed">4 Serviços pendentes de atribuição técnica para esta semana.</p>
-          </div>
-        </div>
-        <Button className="w-full md:w-auto !py-3 !px-8 !text-[8px]">Auto-Atribuir por Especialidade</Button>
-      </Card>
     </div>
   );
 }
