@@ -141,20 +141,7 @@ export function ClientDashboard({ setView }: ClientDashboardProps) {
               </div>
             )}
 
-            <Card className="bg-[#D4AF37]/5 border-[#D4AF37]/10 p-6 md:p-10">
-              <div className="flex items-center gap-4 mb-6">
-                <Bell className="w-6 h-6 text-[#D4AF37]" />
-                <h3 className="text-xl md:text-2xl font-black uppercase tracking-tighter">Próxima Manutenção</h3>
-              </div>
-              <p className="text-sm md:text-base text-white/60 mb-8 font-light leading-relaxed">
-                Sua próxima revisão está agendada para <strong className="text-white font-bold">15 de Junho de 2026</strong>. 
-                Recomendamos agendar a vistoria prévia pelo menos 3 dias antes considerando a alta demanda sazonal.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Button onClick={() => setView('schedule')} className="w-full sm:w-auto !px-8 !py-3">Agendar Agora</Button>
-                <Button variant="ghost" className="w-full sm:w-auto !px-8 !py-3 text-[#D4AF37]">Mudar Data</Button>
-              </div>
-            </Card>
+
           </motion.div>
         )}
 
