@@ -31,7 +31,6 @@ export function CheckInForm({ onCancel, onSave }: CheckInFormProps) {
   const [selectedVehicle, setSelectedVehicle] = useState<ScheduledVehicle | null>(null);
   
   const [formData, setFormData] = useState({
-    type: 'Revisão Geral',
     observations: ''
   });
 
