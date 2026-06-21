@@ -31,8 +31,9 @@ import { ScheduleCalendar } from './components/admin/ScheduleCalendar';
 import { ServiceOperations } from './components/admin/ServiceOperations';
 import { FinancialInsights } from './components/admin/FinancialInsights';
 import { Overview } from './components/admin/Overview';
+import { AppointmentRequests } from './components/admin/AppointmentRequests';
 
-type AdminTab = 'overview' | 'team' | 'reports' | 'schedule' | 'operations' | 'finance';
+type AdminTab = 'overview' | 'team' | 'requests' | 'schedule' | 'operations' | 'finance';
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<AdminTab>('overview');
@@ -59,8 +60,8 @@ export default function AdminDashboard() {
     { id: 'overview', label: 'Panorama', icon: LayoutDashboard },
     { id: 'operations', label: 'Operações', icon: Wrench },
     { id: 'schedule', label: 'Agenda', icon: Calendar },
+    { id: 'requests', label: 'Solicitações', icon: CheckCircle2 },
     { id: 'team', label: 'Equipe', icon: Users },
-    { id: 'reports', label: 'Relatórios', icon: FileText },
     { id: 'finance', label: 'Financeiro', icon: DollarSign },
   ];
 
@@ -140,21 +141,14 @@ export default function AdminDashboard() {
           </motion.div>
         )}
 
-        {activeTab === 'reports' && (
+        {activeTab === 'requests' && (
           <motion.div
-            key="reports"
+            key="requests"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
-            className="flex flex-col items-center justify-center py-32 bg-white/2 border border-dashed border-white/10"
           >
-            <FileText className="w-16 h-16 text-white/5 mb-8" />
-            <h3 className="text-2xl font-display font-black uppercase tracking-tighter mb-4 text-white/40">Repositório de Relatórios</h3>
-            <p className="text-xs text-white/20 uppercase tracking-widest mb-10">Acesse o histórico completo de intervenções técnicas</p>
-            <div className="flex gap-4">
-               <Button onClick={() => setSelectedServiceId('DEMO-01')}>Criar Novo Relatório</Button>
-               <Button variant="outline">Exportar Banco de Dados</Button>
-            </div>
+            <AppointmentRequests />
           </motion.div>
         )}
         {activeTab === 'finance' && (

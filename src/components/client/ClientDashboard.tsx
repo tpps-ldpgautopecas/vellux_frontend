@@ -14,6 +14,7 @@ interface ClientDashboardProps {
 export function ClientDashboard({ setView }: ClientDashboardProps) {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [services, setServices] = useState<MaintenanceService[]>([]);
+  const [appointments, setAppointments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedVehicle, setSelectedVehicle] = useState<string | null>(null);
   const [selectedService, setSelectedService] = useState<string | null>(null);
@@ -22,12 +23,14 @@ export function ClientDashboard({ setView }: ClientDashboardProps) {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [vehiclesData, servicesData] = await Promise.all([
+        const [vehiclesData, servicesData, apptsData] = await Promise.all([
           api.get('/vehicles'),
-          api.get('/services')
+          api.get('/services'),
+          api.get('/appointments/client').catch(() => []) // Catch in case endpoint errors
         ]);
         setVehicles(vehiclesData);
         setServices(servicesData);
+        setAppointments(apptsData);
       } catch (err) {
         console.error('Erro ao buscar dados do dashboard:', err);
       } finally {
@@ -89,6 +92,43 @@ export function ClientDashboard({ setView }: ClientDashboardProps) {
                   <p className="text-xs uppercase tracking-widest font-black text-white/30 group-hover:text-white">Adicionar Veículo</p>
                </Card>
             </div>
+
+            {appointments.length > 0 && (
+              <div className="pt-12 border-t border-white/5">
+                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-8">
+                  <div>
+                    <h3 className="text-2xl md:text-3xl font-display font-black uppercase tracking-tighter">Solicitações</h3>
+                    <p className="text-[8px] md:text-[9px] uppercase tracking-[0.3em] text-white/30 font-black">Status dos seus agendamentos</p>
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  {appointments.map((app: any) => (
+                    <Card key={app.id} className="p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-l-4" style={{ 
+                      borderLeftColor: app.status === 'confirmed' ? '#10b981' : app.status === 'rejected' ? '#ef4444' : '#f59e0b'
+                    }}>
+                      <div>
+                        <h4 className="font-bold text-white uppercase tracking-widest text-sm mb-1">{app.service_type}</h4>
+                        <p className="text-[10px] text-white/40 font-mono">{app.car} - {app.plate} | {new Date(app.date).toLocaleDateString('pt-BR')} {new Date(app.date).toLocaleTimeString('pt-BR', {hour: '2-digit', minute: '2-digit'})}</p>
+                      </div>
+                      <div className="flex flex-col items-start md:items-end">
+                        <span className={`text-[10px] uppercase font-black px-3 py-1 rounded-sm ${
+                          app.status === 'confirmed' ? 'bg-[#10b981]/10 text-[#10b981]' : 
+                          app.status === 'rejected' ? 'bg-red-500/10 text-red-500' : 
+                          'bg-[#f59e0b]/10 text-[#f59e0b]'
+                        }`}>
+                          {app.status === 'confirmed' ? 'Aceito' : app.status === 'rejected' ? 'Não Aceito' : 'Em Análise'}
+                        </span>
+                        {app.status === 'rejected' && app.rejection_reason && (
+                          <p className="text-[10px] text-red-400/80 mt-2 font-mono max-w-[250px] truncate" title={app.rejection_reason}>
+                            Motivo: {app.rejection_reason}
+                          </p>
+                        )}
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <div className="pt-12 border-t border-white/5">
                 <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-8">
