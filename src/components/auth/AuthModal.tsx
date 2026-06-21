@@ -31,20 +31,25 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
     setErrorMsg('');
     setLoading(true);
 
-     if (password !== confirmPassword) {
-      setErrorMsg("As senhas não coincidem.");
+    if (!validateEmail(email)) {
+      setErrorMsg("Digite um e-mail válido.");
+      setLoading(false);
       return;
     }
 
-     if (!validateEmail(email)) {
-    setErrorMsg("Digite um e-mail válido.");
-    return;
-    }
+    if (!isLogin) {
+      if (password !== confirmPassword) {
+        setErrorMsg("As senhas não coincidem.");
+        setLoading(false);
+        return;
+      }
 
-    const isPasswordValid = Object.values(passwordValidation).every(Boolean);
-    if (!isPasswordValid) {
-      setErrorMsg("A senha não atende aos requisitos.");
-      return;
+      const isPasswordValid = Object.values(passwordValidation).every(Boolean);
+      if (!isPasswordValid) {
+        setErrorMsg("A senha não atende aos requisitos.");
+        setLoading(false);
+        return;
+      }
     }
 
     try {
