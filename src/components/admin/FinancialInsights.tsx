@@ -10,7 +10,7 @@ import {
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
+import { toPng } from 'html-to-image';
 import { Card, Button } from '../ui';
 import { api } from '../../lib/api';
 
@@ -27,6 +27,7 @@ export function FinancialInsights() {
   const [loading, setLoading] = useState(true);
   const [dashboardData, setDashboardData] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isExporting, setIsExporting] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -82,50 +83,25 @@ export function FinancialInsights() {
     return 'Filtro';
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-[60vh]">
-        <div className="w-8 h-8 border-2 border-[#F6911F] border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
-
-  if (error || !dashboardData) {
-    return (
-      <div className="flex flex-col items-center justify-center h-[60vh] text-center space-y-4">
-        <AlertCircle className="w-12 h-12 text-red-500/50" />
-        <div>
-          <p className="text-white font-bold">{error || 'Não foi possível carregar os dados.'}</p>
-          <p className="text-white/50 text-sm mt-2">Por favor, faça login novamente ou atualize a página.</p>
-        </div>
-      </div>
-    );
-  }
-
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
-  };
-
-  const [isExporting, setIsExporting] = useState(false);
-
   const handleExportPDF = async () => {
     setIsExporting(true);
     try {
       const element = document.getElementById('financial-report-content');
       if (!element) return;
-      
-      const canvas = await html2canvas(element, {
-        scale: 2,
-        useCORS: true,
+      const imgData = await toPng(element, { 
+        cacheBust: true, 
         backgroundColor: '#0a0a0a',
-        logging: false
+        pixelRatio: 2
       });
       
-      const imgData = canvas.toDataURL('image/png');
+      const img = new Image();
+      img.src = imgData;
+      await new Promise((resolve) => { img.onload = resolve; });
+
       const pdf = new jsPDF('p', 'mm', 'a4');
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pageHeight = pdf.internal.pageSize.getHeight();
-      const imgHeight = (canvas.height * pdfWidth) / canvas.width;
+      const imgHeight = (img.height * pdfWidth) / img.width;
       
       pdf.setFillColor(10, 10, 10);
       pdf.rect(0, 0, pdfWidth, 20, 'F');
@@ -161,6 +137,30 @@ export function FinancialInsights() {
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-[60vh]">
+        <div className="w-8 h-8 border-2 border-[#F6911F] border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (error || !dashboardData) {
+    return (
+      <div className="flex flex-col items-center justify-center h-[60vh] text-center space-y-4">
+        <AlertCircle className="w-12 h-12 text-red-500/50" />
+        <div>
+          <p className="text-white font-bold">{error || 'Não foi possível carregar os dados.'}</p>
+          <p className="text-white/50 text-sm mt-2">Por favor, faça login novamente ou atualize a página.</p>
+        </div>
+      </div>
+    );
+  }
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
   };
 
   return (
