@@ -233,11 +233,11 @@ export function ClientDashboard({ setView }: ClientDashboardProps) {
                          <div>
                            <h4 className="text-[10px] uppercase tracking-widest font-bold text-white/60 mb-4 flex items-center gap-2">
                             <Activity className="w-4 h-4 text-[#F6911F]" /> Laudo Técnico Emitido
-                          </h4>
-                          <div className="p-4 bg-white/5 border border-white/10 space-y-4">
+                           </h4>
+                           <div className="p-4 bg-white/5 border border-white/10 space-y-4">
                              <div>
                                <p className="text-[8px] uppercase font-black tracking-widest text-[#F6911F] mb-1">Diagnóstico</p>
-                               <p className="text-sm text-white/60 italic">{detailData.report.diagnostics || 'Não informado.'}</p>
+                               <p className="text-sm text-white/60 italic whitespace-pre-wrap">{detailData.report.diagnostics || 'Não informado.'}</p>
                              </div>
                              {detailData.report.procedures && detailData.report.procedures.length > 0 && (
                                <div className="pt-4 border-t border-white/5">
@@ -256,7 +256,7 @@ export function ClientDashboard({ setView }: ClientDashboardProps) {
                                    {detailData.report.parts.map((p, idx) => (
                                       <li key={idx} className="flex justify-between">
                                         <span>{p.name} <span className="text-white/30">({p.brand})</span></span>
-                                        <span className="font-mono text-white/40">x{p.quantity}</span>
+                                        <span className="font-mono text-white/40">x{p.quantity || p.qty}</span>
                                       </li>
                                    ))}
                                  </ul>
@@ -265,10 +265,10 @@ export function ClientDashboard({ setView }: ClientDashboardProps) {
                              {detailData.report.observations && (
                                <div className="pt-4 border-t border-white/5">
                                  <p className="text-[8px] uppercase font-black tracking-widest text-[#F6911F] mb-1">Observações</p>
-                                 <p className="text-sm text-white/60">{detailData.report.observations}</p>
+                                 <p className="text-sm text-white/60 whitespace-pre-wrap">{detailData.report.observations}</p>
                                </div>
                              )}
-                          </div>
+                          </div>                         </div>
                          </div>
                       </div>
                     ) : (
