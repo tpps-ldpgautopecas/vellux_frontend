@@ -93,6 +93,17 @@ export function ClientDashboard({ setView }: ClientDashboardProps) {
                </Card>
             </div>
 
+            <div className="pt-12 border-t border-white/5">
+                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-8">
+                  <div>
+                    <h3 className="text-2xl md:text-3xl font-display font-black uppercase tracking-tighter">Acompanhamento</h3>
+                    <p className="text-[8px] md:text-[9px] uppercase tracking-[0.3em] text-white/30 font-black">Serviços em tempo real</p>
+                  </div>
+                  <Button onClick={() => setView('schedule')} variant="outline" className="w-full md:w-auto !px-4 !py-2">Agendar Novo</Button>
+                </div>
+              <ServiceHistory services={services} />
+            </div>
+
             {appointments.length > 0 && (
               <div className="pt-12 border-t border-white/5">
                 <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-8">
@@ -102,7 +113,7 @@ export function ClientDashboard({ setView }: ClientDashboardProps) {
                   </div>
                 </div>
                 <div className="space-y-4">
-                  {appointments.map((app: any) => (
+                  {appointments.slice(0, 3).map((app: any) => (
                     <Card key={app.id} className="p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-l-4" style={{ 
                       borderLeftColor: app.status === 'confirmed' ? '#10b981' : app.status === 'rejected' ? '#ef4444' : '#f59e0b'
                     }}>
@@ -129,17 +140,6 @@ export function ClientDashboard({ setView }: ClientDashboardProps) {
                 </div>
               </div>
             )}
-
-            <div className="pt-12 border-t border-white/5">
-                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-8">
-                  <div>
-                    <h3 className="text-2xl md:text-3xl font-display font-black uppercase tracking-tighter">Acompanhamento</h3>
-                    <p className="text-[8px] md:text-[9px] uppercase tracking-[0.3em] text-white/30 font-black">Serviços em tempo real</p>
-                  </div>
-                  <Button onClick={() => setView('schedule')} variant="outline" className="w-full md:w-auto !px-4 !py-2">Agendar Novo</Button>
-                </div>
-              <ServiceHistory services={services} />
-            </div>
 
             <Card className="bg-[#D4AF37]/5 border-[#D4AF37]/10 p-6 md:p-10">
               <div className="flex items-center gap-4 mb-6">
