@@ -132,7 +132,13 @@ export function ScheduleCalendar() {
     fetchSchedule();
   }, [currentDate]);
 
-  const days = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta'];
+  const days = [
+    { name: 'Segunda', offset: 0 },
+    { name: 'Terça', offset: 1 },
+    { name: 'Quarta', offset: 2 },
+    { name: 'Quinta', offset: 3 },
+    { name: 'Sexta', offset: 4 }
+  ];
 
   const monthYear = currentDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
 
@@ -154,18 +160,18 @@ export function ScheduleCalendar() {
           </Button>
         </div>
         <div className="flex gap-4 border-t border-white/5 pt-4 sm:pt-0 sm:border-none w-full sm:w-auto justify-center">
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-blue-500" />
-            <span className="text-[8px] uppercase tracking-widest text-white/40 font-bold">Em Andamento</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-yellow-500" />
-            <span className="text-[8px] uppercase tracking-widest text-white/40 font-bold">Pendente</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-green-500" />
-            <span className="text-[8px] uppercase tracking-widest text-white/40 font-bold">Concluído</span>
-          </div>
+           <div className="flex items-center gap-2">
+             <span className="w-2 h-2 rounded-full bg-blue-500" />
+             <span className="text-[8px] uppercase tracking-widest text-white/40 font-bold">Em Andamento</span>
+           </div>
+           <div className="flex items-center gap-2">
+             <span className="w-2 h-2 rounded-full bg-yellow-500" />
+             <span className="text-[8px] uppercase tracking-widest text-white/40 font-bold">Pendente</span>
+           </div>
+           <div className="flex items-center gap-2">
+             <span className="w-2 h-2 rounded-full bg-green-500" />
+             <span className="text-[8px] uppercase tracking-widest text-white/40 font-bold">Concluído</span>
+           </div>
         </div>
       </div>
 
@@ -175,15 +181,20 @@ export function ScheduleCalendar() {
             <div className="w-8 h-8 border-2 border-[#F6911F] border-t-transparent rounded-full animate-spin" />
           </div>
         )}
-        {days.map((day) => (
-          <div key={day} className="space-y-4">
+        {days.map((day) => {
+          const dayDate = new Date(weekStart);
+          dayDate.setDate(weekStart.getDate() + day.offset);
+          
+          return (
+          <div key={day.name} className="space-y-4">
             <div className="text-left sm:text-center py-2 sm:py-4 border-b border-white/10 sm:border-white/5 bg-white/[0.01] px-4 sm:px-0">
-              <p className="text-[10px] uppercase tracking-[0.3em] font-black text-[#F6911F] sm:text-white/40">{day}</p>
+               <p className="text-lg md:text-xl font-display font-black text-white mb-1 leading-none">{dayDate.getDate().toString().padStart(2, '0')}</p>
+               <p className="text-[9px] uppercase tracking-[0.3em] font-black text-[#F6911F] sm:text-white/40">{day.name}</p>
             </div>
-
+            
             <div className="space-y-3 lg:min-h-[400px] px-4 sm:px-0">
-              {weeklySchedule[day]?.length > 0 ? (
-                weeklySchedule[day].map((item) => (
+              {weeklySchedule[day.name]?.length > 0 ? (
+                weeklySchedule[day.name].map((item) => (
                   <Card
                     key={item.id}
                     className={`p-5 lg:p-4 border-l-2 hover:border-[#F6911F]/40 transition-all group cursor-pointer ${item.status === ServiceStatus.IN_PROGRESS ? 'border-l-blue-500' :
@@ -221,7 +232,8 @@ export function ScheduleCalendar() {
               )}
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
 
     </div>
