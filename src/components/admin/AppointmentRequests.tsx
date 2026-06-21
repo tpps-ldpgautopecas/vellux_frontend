@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Calendar, Check, X, Clock, AlertCircle } from 'lucide-react';
 import { Card, Button, Input } from '../ui';
-import api from '../../services/api';
+import { api } from '../../lib/api';
 
 interface RequestData {
   id: number;
