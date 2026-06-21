@@ -72,13 +72,14 @@ export function ScheduleCalendar() {
 
       // Process services
       servicesData.forEach((srv: any) => {
-        const day = getDayName(srv.date || srv.startTime); // Ensure date exists
+        if (!srv.date) return;
+        const day = getDayName(srv.date);
         if (schedule[day]) {
           schedule[day].push({
             id: `srv-${srv.id}`,
             client: srv.client,
             car: srv.car,
-            time: srv.startTime ? srv.startTime.split(' ')[1] : formatTime(srv.date),
+            time: formatTime(srv.date),
             type: srv.type,
             status: srv.status,
             mechanics: srv.mechanics || []
@@ -131,6 +132,10 @@ export function ScheduleCalendar() {
              <span className="w-2 h-2 rounded-full bg-yellow-500" />
              <span className="text-[8px] uppercase tracking-widest text-white/40 font-bold">Pendente</span>
            </div>
+           <div className="flex items-center gap-2">
+             <span className="w-2 h-2 rounded-full bg-green-500" />
+             <span className="text-[8px] uppercase tracking-widest text-white/40 font-bold">Concluído</span>
+           </div>
         </div>
       </div>
 
@@ -153,7 +158,8 @@ export function ScheduleCalendar() {
                     key={item.id} 
                     className={`p-5 lg:p-4 border-l-2 hover:border-[#F6911F]/40 transition-all group cursor-pointer ${
                       item.status === ServiceStatus.IN_PROGRESS ? 'border-l-blue-500' : 
-                      item.status === ServiceStatus.AWAITING_PARTS ? 'border-l-red-500' : 'border-l-yellow-500'
+                      item.status === ServiceStatus.AWAITING_PARTS ? 'border-l-red-500' : 
+                      item.status === ServiceStatus.COMPLETED ? 'border-l-green-500 opacity-60' : 'border-l-yellow-500'
                     }`}
                   >
                     <div className="flex items-center justify-between mb-3">
