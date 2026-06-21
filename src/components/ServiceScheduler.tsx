@@ -66,6 +66,27 @@ export default function ServiceScheduler({ onSuccess }: { onSuccess: () => void 
   const [date, setDate] = useState<string>('');
   const [time, setTime] = useState<string>('');
   const [notes, setNotes] = useState<string>('');
+  
+  const [availableSlots, setAvailableSlots] = useState<string[]>([]);
+  const [loadingSlots, setLoadingSlots] = useState<boolean>(false);
+
+  useEffect(() => {
+    const fetchSlots = async () => {
+      if (!date) return;
+      try {
+        setLoadingSlots(true);
+        setTime(''); // reset time when date changes
+        const response = await api.get(`/appointments/available-slots?date=${date}`);
+        setAvailableSlots(response.slots || []);
+      } catch (err) {
+        console.error('Erro ao buscar horários livres:', err);
+        setAvailableSlots([]);
+      } finally {
+        setLoadingSlots(false);
+      }
+    };
+    fetchSlots();
+  }, [date]);
 
   const handleSchedule = async () => {
     if (!selectedVehicle || !serviceType || !date || !time) {
@@ -277,21 +298,35 @@ export default function ServiceScheduler({ onSuccess }: { onSuccess: () => void 
 
                     <div className="space-y-4">
                     <label className="text-[10px] uppercase tracking-widest font-black text-white/40 block">Horários Disponíveis</label>
-                    <div className="grid grid-cols-3 gap-2">
-                        {['08:00', '10:00', '13:30', '15:00', '17:30'].map(t => (
-                        <button 
-                            key={t}
-                            onClick={() => setTime(t)}
-                            className={`py-3 border text-[10px] md:text-xs font-mono font-black transition-all ${
-                            time === t 
-                                ? 'bg-[#F6911F]/10 border-[#F6911F] text-[#F6911F]' 
-                                : 'bg-white/1 border-white/5 text-white/30 hover:border-white/20'
-                            }`}
-                        >
-                            {t}
-                        </button>
-                        ))}
-                    </div>
+                    {loadingSlots ? (
+                        <div className="flex items-center justify-center p-4 border border-dashed border-white/10">
+                            <div className="w-5 h-5 border-2 border-[#F6911F] border-t-transparent rounded-full animate-spin" />
+                        </div>
+                    ) : availableSlots.length > 0 ? (
+                        <div className="grid grid-cols-3 gap-2">
+                            {availableSlots.map(t => (
+                            <button 
+                                key={t}
+                                onClick={() => setTime(t)}
+                                className={`py-3 border text-[10px] md:text-xs font-mono font-black transition-all ${
+                                time === t 
+                                    ? 'bg-[#F6911F]/10 border-[#F6911F] text-[#F6911F]' 
+                                    : 'bg-white/1 border-white/5 text-white/30 hover:border-white/20'
+                                }`}
+                            >
+                                {t}
+                            </button>
+                            ))}
+                        </div>
+                    ) : date ? (
+                        <div className="p-4 border border-dashed border-red-500/20 text-center text-red-500/80 text-[10px] font-black uppercase tracking-widest">
+                            Nenhum horário livre. Escolha outro dia.
+                        </div>
+                    ) : (
+                        <div className="p-4 border border-dashed border-white/10 text-center text-white/30 text-[10px] font-black uppercase tracking-widest">
+                            Selecione uma data primeiro
+                        </div>
+                    )}
                     </div>
                 </div>
 
