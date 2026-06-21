@@ -4,7 +4,7 @@ import {
   PieChart, Pie, Cell, BarChart, Bar
 } from 'recharts';
 import { 
-  TrendingUp, ArrowUpRight, ArrowDownRight, Download,
+  TrendingUp, ArrowUpRight, ArrowDownRight,
   Calendar, Users, DollarSign, Activity, AlertCircle, Clock, Star, ChevronDown, Filter
 } from 'lucide-react';
 import { format } from 'date-fns';
@@ -170,9 +170,6 @@ export function FinancialInsights() {
               </div>
             )}
           </div>
-          <Button variant="outline" className="text-[10px] bg-white/[0.02] backdrop-blur-xl border-white/10 hover:border-white/20">
-            <Download className="w-3.5 h-3.5 mr-2" /> Exportar Dados
-          </Button>
         </div>
       </div>
 
