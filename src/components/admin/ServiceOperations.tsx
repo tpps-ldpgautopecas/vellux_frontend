@@ -580,6 +580,7 @@ export function ServiceOperations() {
              <div className="relative w-full max-w-4xl z-10">
                <TechnicalReportForm 
                  serviceId={selectedService.id}
+                 initialServiceName={selectedService.type}
                  onCancel={() => setShowReportForm(false)}
                  onSave={async (data) => {
                    await completeService(selectedService.id, data);

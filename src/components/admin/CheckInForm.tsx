@@ -22,6 +22,7 @@ interface ScheduledVehicle {
   car: string;
   plate: string;
   date: string;
+  type: string;
 }
 
 export function CheckInForm({ onCancel, onSave }: CheckInFormProps) {
@@ -50,7 +51,8 @@ export function CheckInForm({ onCancel, onSave }: CheckInFormProps) {
              client: apt.client,
              car: apt.car,
              plate: apt.plate,
-             date: formatter.format(d)
+             date: formatter.format(d),
+             type: apt.service_type || 'Revisão Geral'
            };
         });
         setRecentAppointments(formatted);
@@ -154,19 +156,9 @@ export function CheckInForm({ onCancel, onSave }: CheckInFormProps) {
 
             <div className="space-y-8">
               <div className="space-y-4">
-                <label className="text-[10px] uppercase tracking-widest font-black text-white/40">Serviço a ser realizado</label>
-                <div className="grid grid-cols-2 gap-3">
-                   {['Revisão Geral', 'PPF / Estética', 'Mecânica Performance', 'Elétrica'].map(t => (
-                     <button 
-                        key={t}
-                        onClick={() => setFormData({...formData, type: t})}
-                        className={`p-4 border text-[9px] uppercase font-black tracking-widest transition-all ${
-                          formData.type === t ? 'bg-yellow-500 border-yellow-500 text-black' : 'bg-white/2 border-white/5 text-white/40 hover:border-white/20'
-                        }`}
-                     >
-                       {t}
-                     </button>
-                   ))}
+                <label className="text-[10px] uppercase tracking-widest font-black text-white/40">Serviço Solicitado no Agendamento</label>
+                <div className="p-4 bg-yellow-500/10 border border-yellow-500/20 text-[10px] uppercase font-black tracking-widest text-yellow-500">
+                  {selectedVehicle?.type}
                 </div>
               </div>
 
@@ -185,7 +177,7 @@ export function CheckInForm({ onCancel, onSave }: CheckInFormProps) {
 
             <div className="pt-8 border-t border-white/5 flex gap-4">
               <Button 
-                onClick={() => onSave({ ...selectedVehicle, ...formData })} 
+                onClick={() => onSave({ ...selectedVehicle, type: selectedVehicle?.type || 'Revisão Geral', ...formData })} 
                 className="flex-1 !bg-yellow-500 !text-black !py-4 font-black text-[10px] uppercase tracking-[0.2em]"
               >
                 <Save className="w-4 h-4 mr-2" /> Confirmar Entrada

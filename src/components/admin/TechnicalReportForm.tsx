@@ -12,12 +12,13 @@ import { Card, Button } from '../ui';
 
 interface TechnicalReportFormProps {
   serviceId: string;
+  initialServiceName?: string;
   onCancel: () => void;
   onSave: (data: any) => void;
 }
 
-export function TechnicalReportForm({ serviceId, onCancel, onSave }: TechnicalReportFormProps) {
-  const [serviceName, setServiceName] = useState('');
+export function TechnicalReportForm({ serviceId, initialServiceName = '', onCancel, onSave }: TechnicalReportFormProps) {
+  const [serviceName, setServiceName] = useState(initialServiceName);
   const [procedures, setProcedures] = useState<string[]>(['']);
   const [diagnostics, setDiagnostics] = useState('');
   const [parts, setParts] = useState<{name: string, brand: string, qty: string}[]>([{name: '', brand: '', qty: '1'}]);
@@ -75,28 +76,9 @@ export function TechnicalReportForm({ serviceId, onCancel, onSave }: TechnicalRe
                <label className="text-[9px] uppercase tracking-[0.3em] font-black text-[#F6911F] flex items-center gap-2">
                  <Briefcase className="w-3 h-3" /> Natureza da Operação
                </label>
-               <div className="flex flex-wrap gap-1.5 mb-2">
-                 {presets.map(p => (
-                   <button 
-                     key={p} 
-                     onClick={() => setServiceName(p)}
-                     className={`text-[7px] uppercase tracking-widest px-2.5 py-1.5 border transition-all font-bold ${
-                       serviceName === p 
-                         ? 'bg-[#F6911F] border-[#F6911F] text-black' 
-                         : 'bg-white/2 border-white/5 text-white/30 hover:border-[#F6911F]/40'
-                     }`}
-                   >
-                     {p}
-                   </button>
-                 ))}
+               <div className="p-4 bg-[#F6911F]/10 border border-[#F6911F]/20 text-xs uppercase font-black tracking-widest text-[#F6911F]">
+                 {serviceName || 'Serviço Padrão'}
                </div>
-               <input 
-                 type="text"
-                 value={serviceName}
-                 onChange={(e) => setServiceName(e.target.value)}
-                 placeholder="Ex: Revisão Completa"
-                 className="w-full bg-white/2 border border-white/5 p-4 text-xs text-white focus:border-[#F6911F]/40 outline-none"
-               />
             </div>
 
             {/* 1.5. Diagnóstico */}

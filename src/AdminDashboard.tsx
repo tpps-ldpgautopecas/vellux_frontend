@@ -46,6 +46,7 @@ export default function AdminDashboard() {
       <div className="min-h-screen bg-[#050505]">
         <TechnicalReportForm 
           serviceId={selectedServiceId} 
+          initialServiceName="Revisão Padrão"
           onCancel={() => setSelectedServiceId(null)}
           onSave={(data) => {
             console.log('Saving report:', data);
