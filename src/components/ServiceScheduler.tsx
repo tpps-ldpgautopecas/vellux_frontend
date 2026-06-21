@@ -23,14 +23,40 @@ import { Card, Button, Input } from './ui';
 import { api } from '../lib/api';
 import { Vehicle } from '../types';
 
-const SERVICOS_DISPONIVEIS = [
-  "Revisão & Mecânica",
-  "Suspensão & Freios",
-  "Diagnóstico Bosch",
-  "Estética & Pintura",
-  "Câmbio & Transmissão",
-  "Climatização Ozônio"
-];
+const CATEGORIAS_SERVICOS = {
+  "Mecânica & Revisão": [
+    "Revisão",
+    "Mecânica Geral",
+    "Troca de Óleo Lubrificante",
+    "Substituição de Filtros"
+  ],
+  "Diagnóstico & Eletrônica": [
+    "Eletrônica Embarcada",
+    "Diagnóstico Eletrônico Computadorizado",
+    "Análise de Emissão de Gases"
+  ],
+  "Suspensão & Rodas": [
+    "Reparo em Suspensão, Rolamentos e Freios",
+    "Alinhamento e Balanceamento",
+    "Desempeno de Rodas",
+    "Substituição de Pneus"
+  ],
+  "Sistemas Específicos": [
+    "Ar Condicionado",
+    "Higienização de AC c/ Ozônio",
+    "Escapamentos",
+    "Direção Hidráulica",
+    "Transmissão Câmbio / Diferencial"
+  ],
+  "Estética & Pintura": [
+    "Lanternagem e Pintura",
+    "Polimento e Vitrificação",
+    "Lavagem de Pintura e Interiores"
+  ],
+  "Especiais": [
+    "Consultoria Técnica"
+  ]
+};
 
 // O "Hoje" Dinâmico
 const dataAtual = new Date();
@@ -62,7 +88,7 @@ export default function ServiceScheduler({ onSuccess }: { onSuccess: () => void 
 
   // Form State
   const [selectedVehicle, setSelectedVehicle] = useState<string>('');
-  const [serviceType, setServiceType] = useState<string>(SERVICOS_DISPONIVEIS[0]);
+  const [serviceType, setServiceType] = useState<string>("Revisão");
   const [date, setDate] = useState<string>('');
   const [time, setTime] = useState<string>('');
   const [notes, setNotes] = useState<string>('');
@@ -289,8 +315,12 @@ export default function ServiceScheduler({ onSuccess }: { onSuccess: () => void 
                         onChange={(e) => setServiceType(e.target.value)}
                         className="w-full bg-black border border-white/10 text-white p-4 pl-12 appearance-none focus:border-[#F6911F] outline-none transition-colors rounded-none"
                         >
-                        {SERVICOS_DISPONIVEIS.map(servico => (
-                            <option key={servico} value={servico}>{servico}</option>
+                        {Object.entries(CATEGORIAS_SERVICOS).map(([categoria, servicos]) => (
+                          <optgroup key={categoria} label={categoria} className="bg-white/5 font-black text-[#F6911F] uppercase tracking-widest text-[10px]">
+                            {servicos.map(servico => (
+                              <option key={servico} value={servico} className="bg-black text-white font-normal normal-case tracking-normal text-xs">{servico}</option>
+                            ))}
+                          </optgroup>
                         ))}
                         </select>
                     </div>
