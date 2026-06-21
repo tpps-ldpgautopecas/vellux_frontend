@@ -114,9 +114,7 @@ export function ClientDashboard({ setView }: ClientDashboardProps) {
                 </div>
                 <div className="space-y-4">
                   {appointments.slice(0, 3).map((app: any) => (
-                    <Card key={app.id} className="p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-l-4" style={{ 
-                      borderLeftColor: app.status === 'confirmed' ? '#10b981' : app.status === 'rejected' ? '#ef4444' : '#f59e0b'
-                    }}>
+                    <Card key={app.id} className={`p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-l-4 ${app.status === 'confirmed' ? 'border-l-[#10b981]' : app.status === 'rejected' ? 'border-l-[#ef4444]' : 'border-l-[#f59e0b]'}`}>
                       <div>
                         <h4 className="font-bold text-white uppercase tracking-widest text-sm mb-1">{app.service_type}</h4>
                         <p className="text-[10px] text-white/40 font-mono">{app.car} - {app.plate} | {new Date(app.date).toLocaleDateString('pt-BR')} {new Date(app.date).toLocaleTimeString('pt-BR', {hour: '2-digit', minute: '2-digit'})}</p>

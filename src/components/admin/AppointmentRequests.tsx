@@ -46,7 +46,7 @@ export function AppointmentRequests() {
 
   const handleApprove = async (id: number) => {
     try {
-      await api.put(`/appointments/${id}/approve`);
+      await api.put(`/appointments/${id}/approve`, {});
       setRequests(reqs => reqs.filter(r => r.id !== id));
     } catch (error) {
       console.error('Erro ao aprovar:', error);
@@ -58,10 +58,10 @@ export function AppointmentRequests() {
     if (!rejectingId) return;
     const reason = customReason || rejectionReason;
     if (!reason) {
-      alert("Selecione ou digite um motivo para a recusa.");
+      alert('Por favor, informe o motivo da recusa.');
       return;
     }
-
+    
     try {
       await api.put(`/appointments/${rejectingId}/reject`, { reason });
       setRequests(reqs => reqs.filter(r => r.id !== rejectingId));
@@ -69,44 +69,47 @@ export function AppointmentRequests() {
       setRejectionReason('');
       setCustomReason('');
     } catch (error) {
-      console.error('Erro ao rejeitar:', error);
-      alert('Ocorreu um erro ao rejeitar a solicitação.');
+      console.error('Erro ao recusar:', error);
+      alert('Ocorreu um erro ao recusar a solicitação.');
     }
   };
 
-  const formatDate = (isoString: string) => {
-    const d = new Date(isoString);
-    return new Intl.DateTimeFormat('pt-BR', {
-      day: '2-digit', month: '2-digit', year: 'numeric',
-      hour: '2-digit', minute: '2-digit'
-    }).format(d);
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('pt-BR', {
+      weekday: 'long',
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric'
+    });
   };
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-display font-black uppercase tracking-tighter">Solicitações de Agendamento</h2>
-        <div className="text-[10px] uppercase tracking-widest font-black text-white/40">
-          {requests.length} pendentes
+        <div>
+          <h2 className="text-2xl font-display font-black uppercase tracking-tighter italic text-white leading-none">Solicitações de <span className="text-[#F6911F]">Agendamento</span></h2>
+          <p className="text-[10px] text-white/40 uppercase tracking-widest font-bold mt-2">Aprove ou recuse pedidos de novos clientes</p>
         </div>
       </div>
 
       {loading ? (
-        <div className="flex items-center justify-center py-20">
+        <div className="h-40 flex items-center justify-center">
           <div className="w-8 h-8 border-2 border-[#F6911F] border-t-transparent rounded-full animate-spin" />
         </div>
       ) : requests.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-32 bg-white/2 border border-dashed border-white/10">
-          <Check className="w-16 h-16 text-white/5 mb-8" />
-          <h3 className="text-2xl font-display font-black uppercase tracking-tighter mb-4 text-white/40">Tudo limpo!</h3>
-          <p className="text-xs text-white/20 uppercase tracking-widest text-center">Não há nenhuma solicitação de agendamento<br/>pendente de aprovação no momento.</p>
-        </div>
+        <Card className="p-12 border-dashed border-white/10 flex flex-col items-center justify-center text-center">
+          <div className="w-16 h-16 rounded-full bg-[#F6911F]/10 flex items-center justify-center mb-4">
+            <Calendar className="w-8 h-8 text-[#F6911F]" />
+          </div>
+          <h3 className="text-lg font-bold text-white mb-2">Nenhuma solicitação pendente</h3>
+          <p className="text-sm text-white/40">Todas as solicitações de agendamento foram analisadas.</p>
+        </Card>
       ) : (
         <div className="grid gap-4">
-          {requests.map(req => (
-            <Card key={req.id} className="p-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
+          {requests.map((req) => (
+            <Card key={req.id} className="p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 hover:border-white/10 transition-colors">
+              <div className="space-y-4 flex-1">
+                <div className="flex items-center gap-4">
                   <div className="w-10 h-10 bg-[#F6911F]/10 rounded flex items-center justify-center">
                     <Clock className="w-5 h-5 text-[#F6911F]" />
                   </div>
@@ -160,33 +163,23 @@ export function AppointmentRequests() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50"
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
           >
             <motion.div 
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-[#0A0A0A] border border-white/10 p-6 max-w-md w-full"
+              className="bg-[#050505] border border-white/10 w-full max-w-md shadow-2xl"
             >
-              <div className="flex items-center gap-3 mb-6">
-                <AlertCircle className="w-6 h-6 text-red-500" />
-                <h3 className="text-xl font-display font-black uppercase tracking-tighter">Motivo da Recusa</h3>
+              <div className="p-6 border-b border-white/10">
+                <h3 className="text-lg font-black text-white uppercase tracking-tighter">Motivo da Recusa</h3>
+                <p className="text-xs text-white/40 mt-1">O cliente será notificado com este motivo.</p>
               </div>
 
-              <div className="space-y-4 mb-8">
+              <div className="p-6 space-y-4">
                 {REJECTION_REASONS.map(reason => (
-                  <label key={reason} className={`flex items-center gap-3 p-3 border cursor-pointer transition-colors ${rejectionReason === reason && !customReason ? 'bg-red-500/10 border-red-500/30 text-red-500' : 'border-white/10 text-white/60 hover:bg-white/5'}`}>
-                    <input 
-                      type="radio" 
-                      name="reason" 
-                      className="hidden"
-                      checked={rejectionReason === reason && !customReason}
-                      onChange={() => {
-                        setRejectionReason(reason);
-                        setCustomReason('');
-                      }}
-                    />
-                    <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${rejectionReason === reason && !customReason ? 'border-red-500' : 'border-white/20'}`}>
+                  <label key={reason} className="flex items-center gap-3 cursor-pointer group" onClick={() => { setRejectionReason(reason); setCustomReason(''); }}>
+                    <div className={`w-4 h-4 rounded-full border flex items-center justify-center transition-colors ${rejectionReason === reason && !customReason ? 'border-red-500' : 'border-white/20 group-hover:border-white/40'}`}>
                       {rejectionReason === reason && !customReason && <div className="w-2 h-2 rounded-full bg-red-500" />}
                     </div>
                     <span className="text-xs uppercase tracking-widest font-bold">{reason}</span>
@@ -196,6 +189,7 @@ export function AppointmentRequests() {
                 <div className="pt-4">
                   <label className="text-[10px] uppercase tracking-widest font-black text-white/40 mb-2 block">Ou digite outro motivo:</label>
                   <Input 
+                    label="Motivo Personalizado"
                     value={customReason}
                     onChange={(e) => {
                       setCustomReason(e.target.value);
@@ -206,7 +200,7 @@ export function AppointmentRequests() {
                 </div>
               </div>
 
-              <div className="flex justify-end gap-4">
+              <div className="flex justify-end gap-4 p-6 border-t border-white/10">
                 <Button variant="outline" onClick={() => {
                   setRejectingId(null);
                   setRejectionReason('');
