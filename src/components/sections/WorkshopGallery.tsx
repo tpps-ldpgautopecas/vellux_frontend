@@ -1,13 +1,17 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { Camera } from 'lucide-react';
+import img2 from '../../imgs/2.jpg';
+import img3 from '../../imgs/3.jpg';
+import img4 from '../../imgs/4.jpg';
+import img5 from '../../imgs/5.jpg';
 
 export function WorkshopGallery() {
   const images = [
-    { url: 'https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?auto=format&fit=crop&q=80&w=1000', title: 'Equipe Técnica' },
-    { url: 'https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?auto=format&fit=crop&q=80&w=1000', title: 'Equipamentos de Ponta' },
-    { url: 'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&q=80&w=1000', title: 'Precisão em Alinhamento' },
-    { url: 'https://images.unsplash.com/photo-1580273916550-e323be2ae537?auto=format&fit=crop&q=80&w=1000', title: 'Nossa Unidade' },
+    { url: img2, title: 'Equipe Técnica' },
+    { url: img3, title: 'Equipamentos de Ponta' },
+    { url: img4, title: 'Precisão em Alinhamento' },
+    { url: img5, title: 'Nossa Unidade' },
   ];
 
   return (

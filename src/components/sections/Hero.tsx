@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { Button } from '../ui';
+import img1 from '../../imgs/1.jpg';
 
 export function Hero() {
   return (
@@ -9,7 +10,7 @@ export function Hero() {
       <div className="absolute inset-0 z-0">
         <div className="absolute inset-0 bg-gradient-to-r from-black via-black/90 to-black/60 z-10" />
         <img 
-          src="https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&q=80&w=2000" 
+          src={img1} 
           alt="Oficina Vellux Motors"
           className="w-full h-full object-cover grayscale opacity-30"
           referrerPolicy="no-referrer"
