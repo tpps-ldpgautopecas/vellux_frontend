@@ -20,6 +20,7 @@ interface Specialist {
   photo?: string;
   email?: string;
   phone?: string;
+  password?: string;
 }
 
 export function TeamManagement() {
@@ -68,7 +69,7 @@ export function TeamManagement() {
 
   const handleCreateNew = () => {
     setEditedSpecialist({
-      name: '', email: '', phone: '', specialty: '', role: 'mechanic', status: 'available'
+      name: '', email: '', password: '', phone: '', specialty: '', role: 'mechanic', status: 'available'
     });
     setIsCreating(true);
     setSelectedSpecialist({} as Specialist); // Dummy to open modal
@@ -81,6 +82,7 @@ export function TeamManagement() {
         await api.post('/team', {
           name: editedSpecialist.name,
           email: editedSpecialist.email,
+          password: editedSpecialist.password,
           role: editedSpecialist.role,
           specialty: editedSpecialist.specialty,
           phone: editedSpecialist.phone
@@ -269,15 +271,28 @@ export function TeamManagement() {
                             />
                           </div>
                           {isCreating && (
+                            <>
                             <div>
-                              <p className="text-[8px] uppercase tracking-widest text-white/20 font-black mb-1">Email</p>
+                              <p className="text-[8px] uppercase tracking-widest text-white/20 font-black mb-1">Email (Login)</p>
                               <input 
                                 type="email"
                                 value={editedSpecialist?.email}
                                 onChange={(e) => setEditedSpecialist(prev => prev ? {...prev, email: e.target.value} : null)}
                                 className="w-full bg-white/5 border border-white/10 px-4 py-2 text-sm text-white focus:border-[#F6911F]/50 outline-none"
+                                required
                               />
                             </div>
+                            <div>
+                              <p className="text-[8px] uppercase tracking-widest text-white/20 font-black mb-1">Senha Inicial</p>
+                              <input 
+                                type="text"
+                                value={editedSpecialist?.password || ''}
+                                onChange={(e) => setEditedSpecialist(prev => prev ? {...prev, password: e.target.value} : null)}
+                                placeholder="Deixe em branco para vellux123"
+                                className="w-full bg-white/5 border border-white/10 px-4 py-2 text-sm text-white focus:border-[#F6911F]/50 outline-none placeholder:text-white/20"
+                              />
+                            </div>
+                            </>
                           )}
                           <div>
                             <p className="text-[8px] uppercase tracking-widest text-white/20 font-black mb-1">Cargo (Role)</p>
