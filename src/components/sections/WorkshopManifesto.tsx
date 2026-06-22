@@ -23,7 +23,7 @@ export function WorkshopManifesto() {
     {
       icon: Award,
       title: "Excelência Certificada",
-      desc: "Nossa equipe passa por treinamentos constantes nos centros técnicos mais renomados da Europa."
+      desc: "Nossa equipe passa por treinamentos constantes nos centros técnicos."
     }
   ];
 
@@ -31,7 +31,7 @@ export function WorkshopManifesto() {
     <section className="py-24 bg-black relative overflow-hidden">
       {/* Background Accent */}
       <div className="absolute top-0 right-0 w-1/3 h-full bg-[#F6911F]/5 skew-x-12 translate-x-24" />
-      
+
       <div className="max-w-7xl mx-auto px-6 relative z-10">
         <div className="grid lg:grid-cols-2 gap-20 items-center">
           <div className="space-y-8">
@@ -42,7 +42,7 @@ export function WorkshopManifesto() {
                 um <span className="text-[#F6911F]">Vellux de Engenharia.</span>
               </h2>
             </div>
-            
+
             <p className="text-white/40 text-lg leading-relaxed font-light italic">
               Nascemos da paixão pela perfeição mecânica. Na Vellux Motors, não apenas consertamos carros; restauramos a alma de máquinas que foram feitas para desafiar os limites. Nossa infraestrutura foi desenhada para atender aos padrões mais rigorosos de colecionadores e entusiastas de performance.
             </p>

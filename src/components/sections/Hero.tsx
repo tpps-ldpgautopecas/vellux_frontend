@@ -3,7 +3,11 @@ import { motion } from 'motion/react';
 import { Button } from '../ui';
 import img1 from '../../imgs/1.jpg';
 
-export function Hero() {
+interface HeroProps {
+  onAuthClick?: () => void;
+}
+
+export function Hero({ onAuthClick }: HeroProps) {
   return (
     <section id="inicio" className="relative h-screen flex border-b border-white/10 overflow-hidden bg-black">
       {/* Background Image with Overlay */}
@@ -36,7 +40,7 @@ export function Hero() {
             Oficina especializada em carros importados e nacionais, prestando serviço de <span className="text-white font-bold">EXCELÊNCIA</span> para clientes que fazem o melhor por seus automóveis.
           </p>
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-6 sm:gap-8">
-            <Button className="!py-5 px-10">Reservar Diagnóstico</Button>
+            <Button onClick={onAuthClick} className="!py-5 px-10">Reservar Diagnóstico</Button>
             <div className="flex flex-col">
               <span className="text-[9px] text-white/30 uppercase tracking-[0.2em] font-black">Disponibilidade Hoje</span>
               <span className="text-sm text-white/80 font-medium italic">Atendimento até 19:00</span>

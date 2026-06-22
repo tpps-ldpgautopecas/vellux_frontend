@@ -20,7 +20,6 @@ import { SectionHeading } from './components/layout/SectionHeading';
 import { Hero } from './components/sections/Hero';
 import { Services } from './components/sections/Services';
 import { WorkshopManifesto } from './components/sections/WorkshopManifesto';
-import { QualityAssurance } from './components/sections/QualityAssurance';
 import { WorkshopGallery } from './components/sections/WorkshopGallery';
 import { Contact } from './components/sections/Contact';
 
@@ -78,11 +77,10 @@ export default function App() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
             >
-              <Hero />
+              <Hero onAuthClick={() => setIsAuthModalOpen(true)} />
               <Services />
               <WorkshopManifesto />
               <WorkshopGallery />
-              <QualityAssurance />
               <Contact onAuthClick={() => setIsAuthModalOpen(true)} />
             </motion.div>
           )}

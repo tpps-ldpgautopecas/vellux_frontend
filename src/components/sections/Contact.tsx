@@ -75,7 +75,6 @@ export function Contact({ onAuthClick }: ContactProps) {
                             <p className="text-sm font-display font-black tracking-tighter">(61) 3233-8003</p>
                          </div>
                       </div>
-                      <Button variant="outline" className="w-full !py-2.5 !text-[9px] uppercase tracking-[0.2em] font-black border-white/10 text-white/40 hover:text-white">Ligar Agora</Button>
                    </div>
 
                    <div className="space-y-4">
@@ -88,7 +87,6 @@ export function Contact({ onAuthClick }: ContactProps) {
                             <p className="text-sm font-display font-black tracking-tighter">(61) 98453-8000</p>
                          </div>
                       </div>
-                      <Button variant="outline" className="w-full !py-2.5 !text-[9px] uppercase tracking-[0.2em] font-black border-[#25D366]/20 text-[#25D366] hover:bg-[#25D366]/10">Iniciar Conversa</Button>
                    </div>
                 </div>
              </Card>
