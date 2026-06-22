@@ -3,6 +3,7 @@ import { Card } from '../ui/Card';
 import { Wrench, CheckCircle, Clock } from 'lucide-react';
 import { api } from '../../lib/api';
 import { TechnicalReportForm } from '../admin/TechnicalReportForm';
+import { motion, AnimatePresence } from 'motion/react';
 
 interface Service {
   id: string;
@@ -19,7 +20,7 @@ interface Service {
 export function MechanicDashboard() {
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedService, setSelectedService] = useState<string | null>(null);
+  const [selectedService, setSelectedService] = useState<Service | null>(null);
 
   useEffect(() => {
     fetchServices();
@@ -36,9 +37,18 @@ export function MechanicDashboard() {
     }
   };
 
-  const handleFinish = () => {
-    setSelectedService(null);
-    fetchServices(); // Refresh list after finishing
+  const handleSaveReport = async (data: any) => {
+    if (!selectedService) return;
+    try {
+      await api.post(`/services/${selectedService.id}/complete`, {
+        report: data
+      });
+      setSelectedService(null);
+      fetchServices();
+    } catch (error) {
+      console.error('Erro ao finalizar serviço:', error);
+      alert('Erro ao finalizar o serviço.');
+    }
   };
 
   if (loading) {
@@ -62,20 +72,20 @@ export function MechanicDashboard() {
           {services.map((service) => (
             <Card 
               key={service.id} 
-              onClick={() => setSelectedService(service.id)}
+              onClick={() => setSelectedService(service)}
               className="flex flex-col p-5 md:p-6 cursor-pointer hover:border-[#D4AF37]/30 transition-all group gap-4"
             >
-              <div className="flex justify-between items-start">
+              <div className="flex justify-between items-start gap-4">
                 <div className="flex gap-4 items-center">
-                  <div className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center group-hover:border-[#F6911F]/30 group-hover:bg-[#F6911F]/10 transition-colors">
-                    <Wrench className="w-6 h-6 text-white/40 group-hover:text-[#F6911F] transition-colors" />
+                  <div className="w-12 h-12 shrink-0 rounded-full bg-white/5 border border-white/10 flex items-center justify-center group-hover:border-[#F6911F]/30 group-hover:bg-[#F6911F]/10 transition-colors">
+                    <Wrench className="w-6 h-6 shrink-0 text-white/40 group-hover:text-[#F6911F] transition-colors" />
                   </div>
                   <div>
                     <h3 className="font-bold text-white uppercase tracking-widest text-sm">{service.car}</h3>
                     <p className="text-[10px] text-[#F6911F] font-mono">{service.plate}</p>
                   </div>
                 </div>
-                <span className="px-3 py-1 bg-[#F6911F]/10 text-[#F6911F] rounded-full text-[10px] font-black uppercase tracking-widest border border-[#F6911F]/20">
+                <span className="shrink-0 px-3 py-1 bg-[#F6911F]/10 text-[#F6911F] rounded-full text-[10px] font-black uppercase tracking-widest border border-[#F6911F]/20 whitespace-nowrap">
                   Em Execução
                 </span>
               </div>
@@ -106,13 +116,32 @@ export function MechanicDashboard() {
         </div>
       )}
 
-      {selectedService && (
-        <TechnicalReportForm
-          serviceId={selectedService}
-          onClose={() => setSelectedService(null)}
-          onSuccess={handleFinish}
-        />
-      )}
+      <AnimatePresence>
+        {selectedService && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+             <motion.div 
+               initial={{ opacity: 0 }}
+               animate={{ opacity: 1 }}
+               exit={{ opacity: 0 }}
+               onClick={() => setSelectedService(null)}
+               className="absolute inset-0 bg-black/95 backdrop-blur-xl" 
+             />
+             <motion.div 
+               initial={{ opacity: 0, scale: 0.95 }}
+               animate={{ opacity: 1, scale: 1 }}
+               exit={{ opacity: 0, scale: 0.95 }}
+               className="relative w-full max-w-4xl z-10"
+             >
+               <TechnicalReportForm 
+                 serviceId={selectedService.id}
+                 initialServiceName={selectedService.type}
+                 onCancel={() => setSelectedService(null)}
+                 onSave={handleSaveReport}
+               />
+             </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
