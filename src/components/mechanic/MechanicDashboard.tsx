@@ -28,7 +28,7 @@ export function MechanicDashboard() {
   const fetchServices = async () => {
     try {
       const response = await api.get('/services/mechanic');
-      setServices(response.data);
+      setServices(response || []);
     } catch (error) {
       console.error('Erro ao carregar serviços do mecânico:', error);
     } finally {
