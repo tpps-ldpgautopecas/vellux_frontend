@@ -4,10 +4,10 @@ import { Camera } from 'lucide-react';
 
 export function WorkshopGallery() {
   const images = [
-    { url: 'https://lh3.googleusercontent.com/d/100KXuvNsA1I9jnMvD6BwIzLlPcRAKTr7', title: 'Equipe Técnica' },
-    { url: 'https://lh3.googleusercontent.com/d/1b418NVWB0gCeKkqc1wNFlpqHCQOqD1qe', title: 'Equipamentos de Ponta' },
-    { url: 'https://lh3.googleusercontent.com/d/13pd2it9XTgZ195N7a_Ra7EH30je_ZLVB', title: 'Precisão em Alinhamento' },
-    { url: 'https://lh3.googleusercontent.com/d/1kPJ1zrsucrOcHuI59iK_KJCA6opNq7py', title: 'Nossa Unidade' },
+    { url: 'https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?auto=format&fit=crop&q=80&w=1000', title: 'Equipe Técnica' },
+    { url: 'https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?auto=format&fit=crop&q=80&w=1000', title: 'Equipamentos de Ponta' },
+    { url: 'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&q=80&w=1000', title: 'Precisão em Alinhamento' },
+    { url: 'https://images.unsplash.com/photo-1580273916550-e323be2ae537?auto=format&fit=crop&q=80&w=1000', title: 'Nossa Unidade' },
   ];
 
   return (

@@ -14,7 +14,7 @@ export function Services() {
       desc: 'Revisão geral, troca de óleo, filtros e manutenção preventiva completa.',
       details: 'Nossa revisão contempla mais de 150 pontos de inspeção. Utilizamos exclusivamente lubrificantes sintéticos de alta performance e filtros originais para garantir a longevidade do seu motor, seguindo rigorosamente os manuais técnicos de fabricantes nacionais e importados.',
       features: ['Troca de Óleo e Filtros', 'Limpeza de Sistema de Arrefecimento', 'Revisão de Correias e Esticadores', 'Check-up de Suspensão'],
-      img: 'https://lh3.googleusercontent.com/d/100KXuvNsA1I9jnMvD6BwIzLlPcRAKTr7'
+      img: 'https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?auto=format&fit=crop&q=80&w=1000'
     },
     { 
       title: 'Suspensão & Freios', 
@@ -22,7 +22,7 @@ export function Services() {
       desc: 'Alinhamento, balanceamento, reparo em suspensão, rolamentos e sistemas de freios.',
       details: 'O sistema de rodagem é vital para a segurança e o handling do veículo. Realizamos o alinhamento 3D e balanceamento computadorizado com equipamentos de precisão absoluta, garantindo o desgaste uniforme dos pneus e estabilidade total.',
       features: ['Alinhamento 3D de Precisão', 'Reparo em Sistemas de Freio', 'Troca de Rolamentos e Buchas', 'Ajuste de Camber e Caster'],
-      img: 'https://lh3.googleusercontent.com/d/13pd2it9XTgZ195N7a_Ra7EH30je_ZLVB'
+      img: 'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&q=80&w=1000'
     },
     { 
       title: 'Diagnóstico Bosch', 
@@ -30,7 +30,7 @@ export function Services() {
       desc: 'Eletrônica embarcada e diagnóstico computadorizado Bosch/Sun de alta precisão.',
       details: 'Utilizamos scanners de última geração homologados pela Bosch e Sun para acessar a telemetria completa do veículo. Identificamos falhas intermitentes, realizamos recalibração de sensores e atualizamos softwares de módulos de controle.',
       features: ['Varredura de Erros (DTC)', 'Análise de Emissão de Gases', 'Recalibração de Sensores ABS/Airbag', 'Teste de Bateria e Alternador'],
-      img: 'https://lh3.googleusercontent.com/d/1b418NVWB0gCeKkqc1wNFlpqHCQOqD1qe'
+      img: 'https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?auto=format&fit=crop&q=80&w=1000'
     },
     { 
       title: 'Estética & Pintura', 
@@ -38,7 +38,7 @@ export function Services() {
       desc: 'Lanternagem, pintura, polimento técnico, vitrificação e detalhamento de interiores.',
       details: 'Elevamos a estética do seu automóvel ao nível de concurso. Nosso processo de polimento em múltiplos estágios remove imperfeições, seguido de vitrificação cerâmica 9H para proteção extrema. Na lanternagem, utilizamos cabine de pintura italiana e tintas de alta fidelidade cromática.',
       features: ['Polimento Técnico Triple Stage', 'Vitrificação Cerâmica Pro', 'Pintura em Estufa Certificada', 'Higiene Interna com Ozônio'],
-      img: 'https://lh3.googleusercontent.com/d/1kPJ1zrsucrOcHuI59iK_KJCA6opNq7py'
+      img: 'https://images.unsplash.com/photo-1601362840469-51e4d8d58785?auto=format&fit=crop&q=80&w=1000'
     },
     { 
       title: 'Câmbio & Transmissão', 
@@ -46,7 +46,7 @@ export function Services() {
       desc: 'Manutenção em câmbios automáticos, manuais e diferenciais de alta performance.',
       details: 'Especialistas em transmissão de dupla embreagem (PDK, DSG) e câmbios automáticos sequenciais. Realizamos a troca de fluido por diálise e calibração de mecatrônica para trocas de marcha imperceptíveis e máxima durabilidade.',
       features: ['Troca de Fluido por Diálise', 'Calibração de Mecatrônica', 'Reparo em Diferenciais', 'Manutenção PDK / DSG'],
-      img: 'https://lh3.googleusercontent.com/d/100KXuvNsA1I9jnMvD6BwIzLlPcRAKTr7'
+      img: 'https://images.unsplash.com/photo-1580273916550-e323be2ae537?auto=format&fit=crop&q=80&w=1000'
     },
     { 
       title: 'Climatização Ozônio', 
@@ -54,7 +54,7 @@ export function Services() {
       desc: 'Higienização completa do ar-condicionado com tecnologia de ozônio avançada.',
       details: 'Muito além de um simples filtro de cabine. Utilizamos a ozonização para eliminar 99.9% de fungos e bactérias nos dutos de ventilação, garantindo um ambiente puro e livre de odores, além de carga de gás refrigerante de precisão.',
       features: ['Ozonização de Cabine', 'Limpeza Profunda de Dutos', 'Carga de Gás Ecológico', 'Troca de Filtro de Partículas'],
-      img: 'https://lh3.googleusercontent.com/d/1b418NVWB0gCeKkqc1wNFlpqHCQOqD1qe'
+      img: 'https://images.unsplash.com/photo-1517524008697-84bbe3c3fd98?auto=format&fit=crop&q=80&w=1000'
     },
   ];
 

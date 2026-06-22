@@ -9,8 +9,8 @@ export function Hero() {
       <div className="absolute inset-0 z-0">
         <div className="absolute inset-0 bg-gradient-to-r from-black via-black/90 to-black/60 z-10" />
         <img 
-          src="https://lh3.googleusercontent.com/d/1JrgLGpswMp5OOiC8OzinSSOT1LvFdyWZ" 
-          alt="Oficina Vellux Motors" 
+          src="https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&q=80&w=2000" 
+          alt="Oficina Vellux Motors"
           className="w-full h-full object-cover grayscale opacity-30"
           referrerPolicy="no-referrer"
         />
