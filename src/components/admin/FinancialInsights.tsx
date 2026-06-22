@@ -176,9 +176,9 @@ export function FinancialInsights() {
       {/* High-level KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         {[
-          { label: 'Receita Total', value: formatCurrency(dashboardData.kpis.totalRevenue), icon: DollarSign, trend: '+12%' },
-          { label: 'Serviços', value: dashboardData.kpis.totalServices, icon: Activity, trend: '+5%' },
-          { label: 'Ticket Médio', value: formatCurrency(dashboardData.kpis.averageTicket), icon: TrendingUp, trend: '+2%' },
+          { label: 'Receita Total', value: formatCurrency(dashboardData.kpis.totalRevenue), icon: DollarSign, trend: dashboardData.trends?.totalRevenue || '0%' },
+          { label: 'Serviços', value: dashboardData.kpis.totalServices, icon: Activity, trend: dashboardData.trends?.totalServices || '0%' },
+          { label: 'Ticket Médio', value: formatCurrency(dashboardData.kpis.averageTicket), icon: TrendingUp, trend: dashboardData.trends?.averageTicket || '0%' },
           { label: 'NPS', value: dashboardData.kpis.averageSatisfaction > 0 ? `${dashboardData.kpis.averageSatisfaction.toFixed(1)} / 5.0` : 'N/A', icon: Star, trend: '' },
           { label: 'Tempo Reparo', value: dashboardData.kpis.averageRepairTime > 0 ? `${Math.max(1, Math.round(dashboardData.kpis.averageRepairTime))} dias` : 'N/A', icon: Clock, trend: '' },
         ].map((kpi) => (
@@ -189,8 +189,13 @@ export function FinancialInsights() {
                 <kpi.icon className="w-4 h-4 text-[#F6911F]" />
               </div>
               {kpi.trend && (
-                <div className="flex items-center px-2 py-1 rounded bg-green-500/10 text-[9px] font-black text-green-500 border border-green-500/20">
-                  <ArrowUpRight className="w-3 h-3 mr-1" />
+                <div className={`flex items-center px-2 py-1 rounded text-[9px] font-black border ${
+                  kpi.trend.startsWith('+') ? 'bg-green-500/10 text-green-500 border-green-500/20' : 
+                  kpi.trend.startsWith('-') ? 'bg-red-500/10 text-red-500 border-red-500/20' : 
+                  'bg-white/5 text-white/50 border-white/10'
+                }`}>
+                  {kpi.trend.startsWith('+') ? <ArrowUpRight className="w-3 h-3 mr-1" /> : 
+                   kpi.trend.startsWith('-') ? <ArrowDownRight className="w-3 h-3 mr-1" /> : null}
                   {kpi.trend}
                 </div>
               )}
