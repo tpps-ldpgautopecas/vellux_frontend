@@ -57,7 +57,7 @@ export function Overview({ setActiveTab }: OverviewProps) {
     );
   }
 
-  const { stats, activeServices, activeServicesTotal, todaySchedule, pendingToday } = data;
+  const { stats, activeServices, activeServicesTotal, todaySchedule, pendingToday, pendingRequests } = data;
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
@@ -72,6 +72,29 @@ export function Overview({ setActiveTab }: OverviewProps) {
 
   return (
     <div className="animate-in fade-in duration-700">
+      {pendingRequests > 0 ? (
+        <Card onClick={() => setActiveTab('requests')} className="bg-[#F6911F]/10 border-[#F6911F]/30 p-4 mb-6 cursor-pointer hover:bg-[#F6911F]/20 transition-colors flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Calendar className="w-6 h-6 text-[#F6911F]" />
+            <div>
+              <p className="text-white font-bold">Você tem {pendingRequests} solicitação(ões) de agendamento pendente(s)!</p>
+              <p className="text-[10px] text-white/50 uppercase tracking-widest">Clique aqui para revisar e aprovar.</p>
+            </div>
+          </div>
+          <ChevronRight className="w-5 h-5 text-[#F6911F]" />
+        </Card>
+      ) : (
+        <Card onClick={() => setActiveTab('requests')} className="bg-white/5 border-white/10 p-4 mb-6 cursor-pointer hover:bg-white/10 transition-colors flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Calendar className="w-6 h-6 text-white/30" />
+            <div>
+              <p className="text-white/60 font-bold">Nenhuma solicitação de agendamento pendente.</p>
+              <p className="text-[10px] text-white/40 uppercase tracking-widest">A agenda está sob controle.</p>
+            </div>
+          </div>
+        </Card>
+      )}
+
       {/* Stats Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-12">
         {statCards.map((stat, i) => (

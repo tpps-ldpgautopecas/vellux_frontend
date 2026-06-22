@@ -74,13 +74,19 @@ export function AppointmentRequests() {
     }
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('pt-BR', {
-      weekday: 'long',
+  const formatDateTime = (dateString: string) => {
+    const d = new Date(dateString);
+    const date = d.toLocaleDateString('pt-BR', {
+      weekday: 'short',
       day: '2-digit',
       month: 'long',
       year: 'numeric'
     });
+    const time = d.toLocaleTimeString('pt-BR', {
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+    return `${date} às ${time}`;
   };
 
   return (
@@ -122,7 +128,7 @@ export function AppointmentRequests() {
                 <div className="flex flex-wrap items-center gap-4 text-xs font-mono">
                   <div className="px-3 py-1 bg-white/5 border border-white/10 flex items-center gap-2">
                     <Calendar className="w-3 h-3 text-[#F6911F]" />
-                    {formatDate(req.date)}
+                    {formatDateTime(req.date)}
                   </div>
                   <div className="px-3 py-1 bg-white/5 border border-white/10">
                     {req.car} - <span className="text-[#F6911F]">{req.plate}</span>
