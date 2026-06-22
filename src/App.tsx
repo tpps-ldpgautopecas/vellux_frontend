@@ -26,6 +26,7 @@ import { Contact } from './components/sections/Contact';
 // Auth & Client
 import { AuthModal } from './components/auth/AuthModal';
 import { ClientDashboard } from './components/client/ClientDashboard';
+import { MechanicDashboard } from './components/mechanic/MechanicDashboard';
 
 export default function App() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
@@ -39,8 +40,10 @@ export default function App() {
         if (currentView !== 'landing') setCurrentView('landing');
         setHasRedirected(false);
       } else if (profile && !hasRedirected) {
-        if (profile.role === UserRole.ADMIN || profile.role === UserRole.MECHANIC) {
+        if (profile.role === UserRole.ADMIN) {
           setCurrentView('admin');
+        } else if (profile.role === UserRole.MECHANIC) {
+          setCurrentView('mechanic');
         } else {
           setCurrentView('client');
         }
@@ -85,7 +88,7 @@ export default function App() {
             </motion.div>
           )}
 
-          {currentView === 'admin' && (profile?.role === UserRole.ADMIN || profile?.role === UserRole.MECHANIC) && (
+          {currentView === 'admin' && profile && (
             <motion.div
               key="admin"
               initial={{ opacity: 0, x: 20 }}
@@ -93,6 +96,18 @@ export default function App() {
               exit={{ opacity: 0, x: -20 }}
             >
               <AdminDashboard />
+            </motion.div>
+          )}
+
+          {currentView === 'mechanic' && profile && (
+            <motion.div
+              key="mechanic"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="py-24 md:py-32 px-6 max-w-5xl mx-auto"
+            >
+              <MechanicDashboard />
             </motion.div>
           )}
 

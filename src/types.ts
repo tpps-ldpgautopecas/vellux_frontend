@@ -118,4 +118,4 @@ export interface Notification {
   read: boolean;
 }
 
-export type ViewState = 'landing' | 'admin' | 'client' | 'schedule' | 'register-vehicle';
+export type ViewState = 'landing' | 'admin' | 'client' | 'mechanic' | 'schedule' | 'register-vehicle';
