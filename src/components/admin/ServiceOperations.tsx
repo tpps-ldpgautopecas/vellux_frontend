@@ -239,18 +239,18 @@ export function ServiceOperations() {
                          initial={{ opacity: 0, y: 10, scale: 0.95 }}
                          animate={{ opacity: 1, y: 0, scale: 1 }}
                          exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                         className="absolute bottom-full left-0 mb-4 w-64 bg-[#0a0a0a] border border-white/10 p-4 z-20 shadow-2xl"
+                         className="absolute bottom-full left-0 mb-4 w-[320px] max-w-[90vw] bg-[#0a0a0a] border border-white/10 p-5 z-20 shadow-2xl"
                        >
                          <div className="text-[8px] uppercase tracking-widest font-black text-white/40 mb-3">Previsão de Entrega (Opcional)</div>
                          <input 
                            type="datetime-local" 
                            value={expectedDelivery}
                            onChange={(e) => setExpectedDelivery(e.target.value)}
-                           className="w-full bg-white/5 border border-white/10 p-2 text-xs text-white mb-3 focus:outline-none focus:border-yellow-500/40"
+                           className="w-full bg-white/5 border border-white/10 p-3 text-xs text-white mb-4 focus:outline-none focus:border-yellow-500/40"
                          />
                          <div className="flex gap-2">
-                           <Button onClick={() => setStartingService(null)} variant="ghost" className="flex-1 !py-2 text-[9px]">Cancelar</Button>
-                           <Button onClick={() => startService(s.id, s.mechanics.length)} className="flex-1 !bg-yellow-500 !text-black !py-2 text-[9px] font-bold">Confirmar</Button>
+                           <Button onClick={() => setStartingService(null)} variant="ghost" className="flex-1 !py-3 !px-4 text-[9px]">Cancelar</Button>
+                           <Button onClick={() => startService(s.id, s.mechanics.length)} className="flex-1 !bg-yellow-500 !text-black !py-3 !px-4 text-[9px] font-bold">Confirmar</Button>
                          </div>
                        </motion.div>
                      )}
