@@ -4,8 +4,8 @@ describe('Fluxo de Autenticação', () => {
   });
 
   it('deve abrir o modal de login e fechar', () => {
-    // Clica no botão de Área do Cliente
-    cy.contains('Área do Cliente').click();
+    // Clica no botão de Entrar
+    cy.contains('Entrar').click();
     
     // Verifica se o modal abriu
     cy.get('h2').contains('Bem-vindo à Vellux').should('be.visible');
@@ -18,7 +18,7 @@ describe('Fluxo de Autenticação', () => {
   });
 
   it('deve alternar entre Login e Cadastro', () => {
-    cy.contains('Área do Cliente').click();
+    cy.contains('Entrar').click();
     
     cy.contains('Criar conta').click();
     cy.contains('Cadastre-se').should('be.visible');
@@ -29,11 +29,12 @@ describe('Fluxo de Autenticação', () => {
   });
 
   it('deve mostrar erro com credenciais inválidas', () => {
-    cy.contains('Área do Cliente').click();
+    cy.contains('Entrar').click();
     
     cy.get('input[type="email"]').type('email_invalido@teste.com');
     cy.get('input[type="password"]').type('senhainvalida');
-    cy.contains('button', 'Entrar').click();
+    // Como há um botão 'Entrar' no navbar e um 'Entrar' no modal, precisamos especificar o modal.
+    cy.get('button[type="submit"]').contains('Entrar').click();
     
     // Supabase irá retornar um erro que deve aparecer na tela
     cy.contains('Credenciais inválidas').should('be.visible');
