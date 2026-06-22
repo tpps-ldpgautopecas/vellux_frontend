@@ -273,7 +273,6 @@ export function ClientDashboard({ setView }: ClientDashboardProps) {
                       <p className="text-[10px] uppercase tracking-widest text-white/30 mb-2 font-bold">Investimento de Manutenção</p>
                       <p className="text-3xl font-display italic tracking-tight">R$ {detailData.budget ? Number(detailData.budget).toLocaleString('pt-BR') : '0,00'}</p>
                     </div>
-                    <Button variant="outline" className="!px-6 !py-2">Download NF-e</Button>
                  </div>
               </Card>
             )}
