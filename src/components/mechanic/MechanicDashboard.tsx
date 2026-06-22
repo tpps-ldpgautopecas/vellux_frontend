@@ -60,46 +60,47 @@ export function MechanicDashboard() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {services.map((service) => (
-            <Card key={service.id} className="p-6 flex flex-col justify-between border-l-4 border-l-[#F6911F] bg-black/40">
-              <div>
-                <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <h3 className="text-lg font-bold text-white uppercase">{service.car}</h3>
-                    <p className="text-sm text-[#F6911F]">{service.plate}</p>
-                  </div>
-                  <span className="px-3 py-1 bg-[#F6911F]/20 text-[#F6911F] rounded-full text-xs font-bold uppercase">
-                    Em Execução
-                  </span>
-                </div>
-                
-                <div className="space-y-3 mb-6">
-                  <div>
-                    <span className="text-xs text-white/50 uppercase tracking-wider">Cliente</span>
-                    <p className="text-white">{service.client}</p>
+            <Card 
+              key={service.id} 
+              onClick={() => setSelectedService(service.id)}
+              className="flex flex-col p-5 md:p-6 cursor-pointer hover:border-[#D4AF37]/30 transition-all group gap-4"
+            >
+              <div className="flex justify-between items-start">
+                <div className="flex gap-4 items-center">
+                  <div className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center group-hover:border-[#F6911F]/30 group-hover:bg-[#F6911F]/10 transition-colors">
+                    <Wrench className="w-6 h-6 text-white/40 group-hover:text-[#F6911F] transition-colors" />
                   </div>
                   <div>
-                    <span className="text-xs text-white/50 uppercase tracking-wider">Tipo de Serviço</span>
-                    <p className="text-white">{service.type}</p>
-                  </div>
-                  {service.diagnostics && (
-                    <div>
-                      <span className="text-xs text-white/50 uppercase tracking-wider">Diagnóstico Inicial</span>
-                      <p className="text-white/80 text-sm mt-1 bg-black/50 p-2 rounded border border-white/5">{service.diagnostics}</p>
-                    </div>
-                  )}
-                  <div className="flex items-center gap-2 text-xs text-[#F6911F]/70 mt-4 font-mono">
-                    <Clock className="w-4 h-4" />
-                    <span>Iniciado em: {service.startTime}</span>
+                    <h3 className="font-bold text-white uppercase tracking-widest text-sm">{service.car}</h3>
+                    <p className="text-[10px] text-[#F6911F] font-mono">{service.plate}</p>
                   </div>
                 </div>
+                <span className="px-3 py-1 bg-[#F6911F]/10 text-[#F6911F] rounded-full text-[10px] font-black uppercase tracking-widest border border-[#F6911F]/20">
+                  Em Execução
+                </span>
               </div>
 
-              <button
-                onClick={() => setSelectedService(service.id)}
-                className="w-full py-3 bg-[#F6911F] hover:bg-[#ff9d2e] text-black font-bold uppercase tracking-wider rounded transition-colors mt-4"
-              >
-                Finalizar Serviço
-              </button>
+              <div className="mt-2 space-y-2 border-t border-white/5 pt-4">
+                <div>
+                  <span className="text-[10px] text-white/30 uppercase tracking-widest font-black">Cliente</span>
+                  <p className="text-sm text-white/70 font-medium">{service.client}</p>
+                </div>
+                <div>
+                  <span className="text-[10px] text-white/30 uppercase tracking-widest font-black">Tipo de Serviço</span>
+                  <p className="text-sm text-white/70 font-medium">{service.type}</p>
+                </div>
+                {service.diagnostics && (
+                  <div>
+                    <span className="text-[10px] text-white/30 uppercase tracking-widest font-black">Diagnóstico Inicial</span>
+                    <p className="text-sm text-white/60 mt-1 line-clamp-2">{service.diagnostics}</p>
+                  </div>
+                )}
+              </div>
+              
+              <div className="flex items-center gap-2 mt-2 pt-4 border-t border-white/5 text-[10px] text-white/30 uppercase tracking-widest font-black">
+                <Clock className="w-3 h-3 text-[#F6911F]" />
+                <span>Início: {service.startTime}</span>
+              </div>
             </Card>
           ))}
         </div>
