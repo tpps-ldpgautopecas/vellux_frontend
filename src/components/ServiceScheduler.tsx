@@ -408,9 +408,9 @@ export default function ServiceScheduler({ onSuccess }: { onSuccess: () => void 
             <div className="w-24 h-24 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-8 border border-green-500/20">
               <CheckCircle2 className="w-12 h-12 text-green-500" />
             </div>
-            <h3 className="text-3xl md:text-5xl font-display font-black uppercase tracking-tighter mb-4">Agendado com Sucesso</h3>
+            <h3 className="text-3xl md:text-5xl font-display font-black uppercase tracking-tighter mb-4">Solicitação Enviada</h3>
             <p className="text-white/40 text-sm md:text-base max-w-md mx-auto mb-12 font-light">
-              O seu serviço foi marcado e o evento foi criado na agenda oficial da Vellux Motors!
+              O seu pedido de agendamento foi enviado com sucesso. Em breve a nossa equipe técnica realizará a aprovação do horário e você será notificado!
             </p>
             <Button onClick={onSuccess} variant="outline" className="!px-12 !py-4 text-sm">Voltar à Garagem</Button>
           </motion.div>

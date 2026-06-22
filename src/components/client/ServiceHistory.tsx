@@ -115,15 +115,15 @@ export function ServiceHistory({ services, setSelectedService }: ServiceHistoryP
                               <button
                                 key={s}
                                 onClick={async () => {
-                                  try {
-                                    const { api } = await import('../../lib/api');
-                                    await api.post(`/services/${service.id}/evaluate`, { rating: s, comment: '' });
-                                    // ideally trigger a refresh, but this component doesn't have the refresh function passed to it easily.
-                                    // we can just reload the page or optimistically update. 
-                                    window.location.reload();
-                                  } catch (err) {
-                                    console.error(err);
-                                    alert('Erro ao avaliar serviço.');
+                                  if (window.confirm(`Confirma a avaliação de ${s} estrelas para este serviço?`)) {
+                                    try {
+                                      const { api } = await import('../../lib/api');
+                                      await api.post(`/services/${service.id}/evaluate`, { rating: s, comment: '' });
+                                      window.location.reload();
+                                    } catch (err) {
+                                      console.error(err);
+                                      alert('Erro ao avaliar serviço.');
+                                    }
                                   }
                                 }}
                                 className="w-3 h-3 group/star focus:outline-none transition-transform hover:scale-125"
@@ -147,7 +147,7 @@ export function ServiceHistory({ services, setSelectedService }: ServiceHistoryP
                         <>
                           <p className="text-[8px] uppercase tracking-widest text-green-500/80 font-black mb-2">Data e Hora de Entrega</p>
                           <p className="text-sm font-black text-white italic">
-                            {service.endDate ? new Date(service.endDate).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) : 'N/A'}
+                            {(service.endDate || (service.history && service.history.length > 0 ? service.history[service.history.length - 1].timestamp : null)) ? new Date(service.endDate || service.history[service.history.length - 1].timestamp).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) : 'N/A'}
                           </p>
                         </>
                       ) : (
