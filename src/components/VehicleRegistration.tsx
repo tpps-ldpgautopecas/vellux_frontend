@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Car, 
@@ -33,9 +33,41 @@ export default function VehicleRegistration({ onSuccess, onCancel }: { onSuccess
     color: ''
   });
 
+  const [makes, setMakes] = useState<{codigo: string, nome: string}[]>([]);
+  const [models, setModels] = useState<{codigo: string, nome: string}[]>([]);
+
+  useEffect(() => {
+    fetch('https://parallelum.com.br/fipe/api/v1/carros/marcas')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) setMakes(data);
+      })
+      .catch(err => console.error("Erro ao carregar marcas", err));
+  }, []);
+
+  useEffect(() => {
+    const selectedMake = makes.find(m => m.nome.toLowerCase() === formData.make.toLowerCase());
+    if (selectedMake) {
+      fetch(`https://parallelum.com.br/fipe/api/v1/carros/marcas/${selectedMake.codigo}/modelos`)
+        .then(res => res.json())
+        .then(data => {
+          if (data && Array.isArray(data.modelos)) setModels(data.modelos);
+        })
+        .catch(err => console.error("Erro ao carregar modelos", err));
+    } else {
+      setModels([]);
+    }
+  }, [formData.make, makes]);
+
   const handleRegister = async () => {
     if (!formData.make || !formData.model || !formData.plate) {
       setError("Por favor, preencha as informações obrigatórias.");
+      return;
+    }
+
+    const plateRegex = /^[A-Za-z]{3}-?[0-9]([0-9]|[A-Za-z])[0-9]{2}$/;
+    if (!plateRegex.test(formData.plate)) {
+      setError("O formato da placa é inválido. Use o padrão antigo (ABC-1234) ou Mercosul (ABC1D23).");
       return;
     }
 
@@ -92,20 +124,32 @@ export default function VehicleRegistration({ onSuccess, onCancel }: { onSuccess
 
         <Card className="p-8 space-y-6">
           <div className="grid md:grid-cols-2 gap-6">
-            <Input 
-              label="Marca" 
-              placeholder="Ex: Porsche, Ferrari, BMW..." 
-              value={formData.make}
-              onChange={(e) => setFormData({...formData, make: e.target.value})}
-              icon={<ShieldCheck className="w-4 h-4" />}
-            />
-            <Input 
-              label="Modelo" 
-              placeholder="Ex: 911 Turbo S, M5, Aventador..." 
-              value={formData.model}
-              onChange={(e) => setFormData({...formData, model: e.target.value})}
-              icon={<Car className="w-4 h-4" />}
-            />
+            <div className="relative">
+              <Input 
+                label="Marca" 
+                placeholder="Ex: Porsche, Ferrari, BMW..." 
+                value={formData.make}
+                onChange={(e) => setFormData({...formData, make: e.target.value})}
+                icon={<ShieldCheck className="w-4 h-4" />}
+                list="makes-list"
+              />
+              <datalist id="makes-list">
+                {makes.map(m => <option key={m.codigo} value={m.nome} />)}
+              </datalist>
+            </div>
+            <div className="relative">
+              <Input 
+                label="Modelo" 
+                placeholder="Ex: 911 Turbo S, M5..." 
+                value={formData.model}
+                onChange={(e) => setFormData({...formData, model: e.target.value})}
+                icon={<Car className="w-4 h-4" />}
+                list="models-list"
+              />
+              <datalist id="models-list">
+                {models.map(m => <option key={m.codigo} value={m.nome} />)}
+              </datalist>
+            </div>
           </div>
 
           <div className="grid md:grid-cols-2 gap-6">
