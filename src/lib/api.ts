@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:3000/api';
+const API_URL = import.meta.env.VITE_API_URL || 'https://vellux-backend.onrender.com/api';
 const getHeaders = () => {
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
