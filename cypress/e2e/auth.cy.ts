@@ -138,15 +138,15 @@ describe('Fluxo de Autenticação', () => {
 
   it('deve realizar login e sair da conta', function () {
     cy.get('#root button.\\!px-4').click();
-    
+
     cy.get('#root input[placeholder="seu@email.com"]').type('cypress@gmail.com');
     cy.get('#root input[placeholder="••••••••"]').type('@Cypress123');
-    
+
     cy.get('#root button[type="submit"]').click();
-    
-    
+
+
     cy.contains('Acesso Cliente').should('exist');
-    
+
     cy.get('#root svg.lucide-log-out').click();
   });
 });
